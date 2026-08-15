@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+**/dist/
+.next/
+**/.next/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Tests
+coverage/
+
+# Temporary
+tmp/
+temp/
+uploads/
+
+# Database backups
+*.sql
+*.dump
+*.backup
+
+# Keys
+*.pem
+*.key
+*.p12
+*.pfx

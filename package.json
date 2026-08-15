@@ -1,0 +1,11 @@
+{
+  "name": "clinic-platform",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10",
+  "scripts": {
+    "dev:api": "pnpm --filter @clinic/api start:dev",
+    "dev:worker": "pnpm --filter @clinic/worker start:dev",
+    "build": "pnpm -r build"
+  }
+}
