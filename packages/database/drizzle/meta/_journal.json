@@ -8,6 +8,13 @@
       "when": 1786819090331,
       "tag": "0000_lucky_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786832065532,
+      "tag": "0001_careless_blockbuster",
+      "breakpoints": true
     }
   ]
 }

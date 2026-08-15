@@ -33,6 +33,7 @@ uploads/
 
 # Database backups
 *.sql
+!packages/database/drizzle/*.sql
 *.dump
 *.backup
 
