@@ -68,7 +68,16 @@ async function main(): Promise<void> {
 
       const [user] =
         existingUser ?
-          [existingUser]
+          await tx
+            .update(users)
+            .set({
+              name: ownerName,
+              email: ownerEmail,
+              passwordHash,
+              status: 'active',
+            })
+            .where(eq(users.id, existingUser.id))
+            .returning()
         : await tx
             .insert(users)
             .values({
