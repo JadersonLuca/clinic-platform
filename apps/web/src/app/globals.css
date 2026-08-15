@@ -1,0 +1,516 @@
+:root {
+  color-scheme: light;
+  --background: #f4f7f6;
+  --surface: #ffffff;
+  --surface-muted: #eef3f1;
+  --line: #d9e2de;
+  --line-strong: #c1cec8;
+  --text: #14201c;
+  --muted: #65736d;
+  --brand: #0f766e;
+  --brand-strong: #115e59;
+  --mint: #d7f3ea;
+  --blue: #2563eb;
+  --amber: #b7791f;
+  --rose: #be123c;
+  --shadow: 0 18px 50px rgba(30, 48, 42, 0.10);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--background);
+  color: var(--text);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.sidebar {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 28px;
+  border-right: 1px solid var(--line);
+  background: #17231f;
+  color: #f7fbf9;
+  padding: 24px;
+}
+
+.brand,
+.sidebarStatus,
+.navItem,
+.topbar,
+.topbarActions,
+.panelHeader,
+.setupRow,
+.setupText,
+.conversationRow,
+.clinicPanel {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  gap: 12px;
+}
+
+.brandMark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.brand strong,
+.brand span,
+.sidebarStatus strong,
+.sidebarStatus span {
+  display: block;
+}
+
+.brand strong {
+  font-size: 15px;
+}
+
+.brand span,
+.sidebarStatus span {
+  color: #afbbb6;
+  font-size: 13px;
+}
+
+.nav {
+  display: grid;
+  gap: 6px;
+}
+
+.navItem {
+  gap: 10px;
+  min-height: 42px;
+  border-radius: 8px;
+  color: #dce6e2;
+  padding: 0 12px;
+  text-decoration: none;
+}
+
+.navItem.active,
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+}
+
+.sidebarStatus {
+  gap: 10px;
+  margin-top: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.workspace {
+  min-width: 0;
+  padding: 26px 30px 34px;
+}
+
+.topbar {
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--brand-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.topbarActions {
+  gap: 10px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(280px, 38vw);
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0 12px;
+}
+
+.search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.iconButton,
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.iconButton {
+  width: 42px;
+  height: 42px;
+}
+
+.textButton {
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.summaryGrid,
+.contentGrid,
+.moduleGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.summaryGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.summaryPanel,
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.summaryPanel {
+  min-height: 128px;
+  padding: 18px;
+}
+
+.summaryPanel span,
+.moduleCard span,
+.setupText span,
+.conversationText span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.summaryPanel strong {
+  display: block;
+  margin: 10px 0 8px;
+  font-size: 26px;
+}
+
+.summaryPanel p,
+.moduleCard p,
+.clinicPanel p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.summaryPanel.accent {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.summaryPanel.accent span,
+.summaryPanel.accent p {
+  color: #d7f3ea;
+}
+
+.contentGrid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  align-items: start;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.panelHeader {
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.setupList,
+.conversationList {
+  display: grid;
+  gap: 12px;
+}
+
+.setupRow {
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 58px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.setupText {
+  gap: 10px;
+  min-width: 190px;
+}
+
+.setupText svg {
+  color: var(--brand);
+}
+
+.setupText strong,
+.conversationText strong {
+  display: block;
+  font-size: 14px;
+}
+
+.progressTrack {
+  width: 180px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand);
+}
+
+.moduleGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.moduleCard {
+  min-height: 148px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 14px;
+}
+
+.moduleCard svg {
+  color: var(--brand);
+}
+
+.moduleCard strong {
+  display: block;
+  margin: 12px 0 4px;
+}
+
+.moduleCard p {
+  margin-top: 10px;
+}
+
+.conversationsPanel,
+.clinicPanel {
+  grid-column: span 1;
+}
+
+.conversationRow {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto 44px;
+  gap: 10px;
+  min-height: 58px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.avatar {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--mint);
+  color: var(--brand-strong);
+  font-weight: 800;
+}
+
+.conversationText {
+  min-width: 0;
+}
+
+.conversationText strong,
+.conversationText span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mode {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.modeAI {
+  background: var(--mint);
+  color: var(--brand-strong);
+}
+
+.modeHUMAN {
+  background: #dbeafe;
+  color: var(--blue);
+}
+
+.modePAUSED {
+  background: #fef3c7;
+  color: var(--amber);
+}
+
+time {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.clinicPanel {
+  gap: 18px;
+}
+
+.clinicVisual {
+  display: grid;
+  width: 92px;
+  height: 92px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(37, 99, 235, 0.12)),
+    #ffffff;
+  color: var(--brand);
+}
+
+@media (max-width: 1120px) {
+  .shell {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    align-items: center;
+    padding: 20px 14px;
+  }
+
+  .brand div:last-child,
+  .navItem,
+  .sidebarStatus div {
+    display: none;
+  }
+
+  .navItem.active,
+  .navItem:hover {
+    display: flex;
+  }
+
+  .contentGrid,
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .shell {
+    display: block;
+  }
+
+  .sidebar {
+    min-height: auto;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .workspace {
+    padding: 20px 16px 28px;
+  }
+
+  .topbar,
+  .topbarActions,
+  .clinicPanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  h1 {
+    font-size: 25px;
+  }
+
+  .search {
+    width: 100%;
+  }
+
+  .moduleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .setupRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .progressTrack {
+    width: 100%;
+  }
+
+  .conversationRow {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .mode,
+  time {
+    justify-self: start;
+  }
+}

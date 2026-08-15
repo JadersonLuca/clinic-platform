@@ -2,10 +2,13 @@
   "name": "clinic-platform",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@10",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev:api": "pnpm --filter @clinic/api start:dev",
     "dev:worker": "pnpm --filter @clinic/worker start:dev",
+    "dev:web": "pnpm --filter @clinic/web dev",
+    "db:generate": "pnpm --filter @clinic/database db:generate",
+    "db:migrate": "pnpm --filter @clinic/database db:migrate",
     "build": "pnpm -r build"
   }
 }
