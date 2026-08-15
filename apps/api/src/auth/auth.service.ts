@@ -1,6 +1,6 @@
 import { memberships, organizations, tenants, users } from '@clinic/database';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { and, eq } from 'drizzle-orm';
 import { DatabaseService } from '../database/database.service';
 import type { AuthenticatedUser, JwtPayload } from './auth.types';
@@ -91,9 +91,11 @@ export class AuthService {
       role: user.role,
     };
 
+    const expiresIn = (process.env.JWT_EXPIRES_IN ?? '8h') as JwtSignOptions['expiresIn'];
+
     return this.jwtService.signAsync(payload, {
       secret,
-      expiresIn: process.env.JWT_EXPIRES_IN ?? '8h',
+      expiresIn,
     });
   }
 }

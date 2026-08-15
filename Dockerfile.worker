@@ -4,6 +4,14 @@ WORKDIR /app
 
 RUN corepack enable
 
-ENV NODE_ENV=development
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps ./apps
+COPY packages ./packages
 
-CMD ["sh", "-c", "pnpm install && pnpm dev:worker"]
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @clinic/queues build \
+  && pnpm --filter @clinic/worker build
+
+ENV NODE_ENV=production
+
+CMD ["pnpm", "--filter", "@clinic/worker", "start"]
