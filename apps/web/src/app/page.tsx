@@ -23,8 +23,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getCurrentUser, type AuthenticatedUser } from '../lib/api';
-import { clearSession, readAccessToken } from '../lib/auth-storage';
+import { getCurrentUser, logout, type AuthenticatedUser } from '../lib/api';
 
 const setupItems = [
   { label: 'Dados da clínica', status: 'Base', progress: 72 },
@@ -54,19 +53,11 @@ export default function Home() {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   useEffect(() => {
-    const accessToken = readAccessToken();
-
-    if (!accessToken) {
-      router.replace('/login');
-      return;
-    }
-
-    getCurrentUser(accessToken)
+    getCurrentUser()
       .then((result) => {
         setUser(result.user);
       })
       .catch(() => {
-        clearSession();
         router.replace('/login');
       })
       .finally(() => {
@@ -74,8 +65,8 @@ export default function Home() {
       });
   }, [router]);
 
-  function handleLogout() {
-    clearSession();
+  async function handleLogout() {
+    await logout().catch(() => undefined);
     router.replace('/login');
   }
 

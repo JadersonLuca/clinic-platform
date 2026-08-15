@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HeartPulse, Loader2, LogIn } from 'lucide-react';
 import { ApiError, getCurrentUser, login } from '../../lib/api';
-import { clearSession, readAccessToken, writeSession } from '../../lib/auth-storage';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,19 +14,11 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const accessToken = readAccessToken();
-
-    if (!accessToken) {
-      setIsCheckingSession(false);
-      return;
-    }
-
-    getCurrentUser(accessToken)
+    getCurrentUser()
       .then(() => {
         router.replace('/');
       })
       .catch(() => {
-        clearSession();
         setIsCheckingSession(false);
       });
   }, [router]);
@@ -38,8 +29,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await login(email, password);
-      writeSession(result.accessToken, result.user);
+      await login(email, password);
       router.replace('/');
     } catch (caught) {
       if (caught instanceof ApiError) {

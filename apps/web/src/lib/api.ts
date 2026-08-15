@@ -9,11 +9,8 @@ export interface AuthenticatedUser {
 }
 
 export interface LoginResponse {
-  accessToken: string;
   user: AuthenticatedUser;
 }
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? '';
 
 export class ApiError extends Error {
   constructor(
@@ -25,23 +22,28 @@ export class ApiError extends Error {
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  return apiRequest<LoginResponse>('/auth/login', {
+  return apiRequest<LoginResponse>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 }
 
-export async function getCurrentUser(accessToken: string): Promise<{ user: AuthenticatedUser }> {
-  return apiRequest<{ user: AuthenticatedUser }>('/auth/me', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+export async function getCurrentUser(): Promise<{ user: AuthenticatedUser }> {
+  return apiRequest<{ user: AuthenticatedUser }>('/api/auth/me', {
+    method: 'GET',
+  });
+}
+
+export async function logout(): Promise<void> {
+  await apiRequest<{ ok: true }>('/api/auth/logout', {
+    method: 'POST',
   });
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(path, {
     ...init,
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
       ...init.headers,

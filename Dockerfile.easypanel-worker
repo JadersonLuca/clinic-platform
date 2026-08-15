@@ -1,9 +1,0 @@
-FROM node:24-bookworm-slim
-
-WORKDIR /app
-
-RUN corepack enable
-
-ENV NODE_ENV=production
-
-CMD ["sh", "scripts/easypanel-worker.sh"]

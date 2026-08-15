@@ -1,4 +1,5 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { DatabaseService } from './database/database.service';
 import { QueuesService, type EnqueuedJob } from './queues/queues.service';
 import { RedisService } from './redis/redis.service';
@@ -43,6 +44,7 @@ export class AppController {
   }
 
   @Post('system/jobs/health')
+  @UseGuards(JwtAuthGuard)
   async enqueueSystemHealthCheck(): Promise<{ status: 'queued'; job: EnqueuedJob }> {
     const job = await this.queuesService.enqueueSystemHealthCheck();
 
