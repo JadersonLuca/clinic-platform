@@ -5,8 +5,8 @@ WORKDIR /app
 RUN corepack enable
 
 ENV NODE_ENV=production
-ENV API_PORT=3000
+ENV WEB_PORT=3000
 
 EXPOSE 3000
 
-CMD ["sh", "scripts/easypanel-api.sh"]
+CMD ["sh", "scripts/easypanel-web.sh"]
