@@ -5,14 +5,18 @@
   "scripts": {
     "build": "nest build",
     "start": "node dist/main.js",
-    "start:dev": "nest start --watch"
+    "start:dev": "nest start --watch",
+    "auth:bootstrap-owner": "tsx src/auth/bootstrap-owner.ts"
   },
   "dependencies": {
+    "@clinic/database": "workspace:*",
     "@clinic/queues": "workspace:*",
     "@nestjs/common": "^11.1.6",
     "@nestjs/core": "^11.1.6",
+    "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-fastify": "^11.1.6",
     "bullmq": "^5.65.0",
+    "drizzle-orm": "^0.45.1",
     "ioredis": "^5.7.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
@@ -26,6 +30,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   }
 }

@@ -9,6 +9,7 @@
     "dev:web": "pnpm --filter @clinic/web dev",
     "db:generate": "pnpm --filter @clinic/database db:generate",
     "db:migrate": "pnpm --filter @clinic/database db:migrate",
+    "auth:bootstrap-owner": "pnpm --filter @clinic/api auth:bootstrap-owner",
     "build": "pnpm -r build"
   }
 }
