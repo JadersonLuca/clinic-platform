@@ -1,0 +1,96 @@
+'use client';
+
+import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { HeartPulse, Loader2, LogIn } from 'lucide-react';
+import { ApiError, login } from '../../lib/api';
+import { writeSession } from '../../lib/auth-storage';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await login(email, password);
+      writeSession(result.accessToken, result.user);
+      router.replace('/');
+    } catch (caught) {
+      if (caught instanceof ApiError) {
+        setError(caught.message);
+      } else {
+        setError('Não foi possível conectar à API.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <main className="authShell">
+      <section className="authPanel" aria-labelledby="login-title">
+        <div className="authBrand">
+          <div className="brandMark">
+            <HeartPulse size={22} />
+          </div>
+          <div>
+            <strong>Clinic Platform</strong>
+            <span>Acesso administrativo</span>
+          </div>
+        </div>
+
+        <form className="authForm" onSubmit={handleSubmit}>
+          <div>
+            <span className="eyebrow">Entrar</span>
+            <h1 id="login-title">Acesse o painel</h1>
+          </div>
+
+          <label className="field">
+            <span>Email</span>
+            <input
+              autoComplete="email"
+              inputMode="email"
+              name="email"
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              type="email"
+              value={email}
+            />
+          </label>
+
+          <label className="field">
+            <span>Senha</span>
+            <input
+              autoComplete="current-password"
+              name="password"
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              type="password"
+              value={password}
+            />
+          </label>
+
+          {error ?
+            <p className="formError" role="alert">
+              {error}
+            </p>
+          : null}
+
+          <button className="primaryButton" disabled={isSubmitting} type="submit">
+            {isSubmitting ?
+              <Loader2 className="spin" size={18} />
+            : <LogIn size={18} />}
+            Entrar
+          </button>
+        </form>
+      </section>
+    </main>
+  );
+}

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Activity,
   Bell,
@@ -10,6 +12,8 @@ import {
   FileText,
   HeartPulse,
   LayoutDashboard,
+  Loader2,
+  LogOut,
   MessageCircle,
   Search,
   Settings,
@@ -17,6 +21,10 @@ import {
   Stethoscope,
   Users,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getCurrentUser, type AuthenticatedUser } from '../lib/api';
+import { clearSession, readAccessToken } from '../lib/auth-storage';
 
 const setupItems = [
   { label: 'Dados da clínica', status: 'Base', progress: 72 },
@@ -41,6 +49,44 @@ const conversations = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  useEffect(() => {
+    const accessToken = readAccessToken();
+
+    if (!accessToken) {
+      router.replace('/login');
+      return;
+    }
+
+    getCurrentUser(accessToken)
+      .then((result) => {
+        setUser(result.user);
+      })
+      .catch(() => {
+        clearSession();
+        router.replace('/login');
+      })
+      .finally(() => {
+        setIsCheckingSession(false);
+      });
+  }, [router]);
+
+  function handleLogout() {
+    clearSession();
+    router.replace('/login');
+  }
+
+  if (isCheckingSession) {
+    return (
+      <main className="loadingShell">
+        <Loader2 className="spin" size={24} />
+      </main>
+    );
+  }
+
   return (
     <main className="shell">
       <aside className="sidebar">
@@ -84,8 +130,8 @@ export default function Home() {
         <div className="sidebarStatus">
           <Activity size={18} />
           <div>
-            <strong>Ambiente online</strong>
-            <span>API, Postgres e Redis</span>
+            <strong>{user?.name ?? 'Usuário'}</strong>
+            <span>{user?.role ?? 'sessão ativa'}</span>
           </div>
         </div>
       </aside>
@@ -103,6 +149,9 @@ export default function Home() {
             </label>
             <button className="iconButton" aria-label="Notificações">
               <Bell size={18} />
+            </button>
+            <button className="iconButton" aria-label="Sair" onClick={handleLogout} type="button">
+              <LogOut size={18} />
             </button>
           </div>
         </header>
