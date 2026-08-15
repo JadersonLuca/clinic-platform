@@ -16,14 +16,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return jsonError('Informe email e senha.', 400);
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(credentials),
-    cache: 'no-store',
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+      cache: 'no-store',
+    });
+  } catch (error) {
+    console.error('Failed to call API auth login', error);
+
+    return jsonError('Não foi possível conectar à API.', 502);
+  }
 
   if (!response.ok) {
     const fallback =

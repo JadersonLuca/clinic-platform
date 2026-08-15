@@ -9,12 +9,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return jsonError('Sessão expirada.', 401);
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    cache: 'no-store',
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: 'no-store',
+    });
+  } catch (error) {
+    console.error('Failed to call API auth me', error);
+
+    const nextResponse = jsonError('Não foi possível conectar à API.', 502);
+
+    nextResponse.cookies.delete(authCookieName);
+
+    return nextResponse;
+  }
 
   if (!response.ok) {
     const fallback = response.status === 401 ? 'Sessão expirada.' : 'Não foi possível validar a sessão.';
