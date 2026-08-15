@@ -49,9 +49,27 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
 
   if (!response.ok) {
-    const fallback = response.status === 401 ? 'Credenciais inválidas.' : 'Não foi possível concluir a solicitação.';
-    throw new ApiError(fallback, response.status);
+    const fallback =
+      response.status === 400 ? 'Informe email e senha.'
+      : response.status === 401 ? 'Credenciais inválidas.'
+      : 'Não foi possível concluir a solicitação.';
+
+    throw new ApiError(await readErrorMessage(response, fallback), response.status);
   }
 
   return response.json() as Promise<T>;
+}
+
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const body = (await response.json()) as { message?: unknown };
+
+    if (typeof body.message === 'string' && body.message.trim()) {
+      return body.message;
+    }
+  } catch {
+    return fallback;
+  }
+
+  return fallback;
 }

@@ -1,17 +1,36 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HeartPulse, Loader2, LogIn } from 'lucide-react';
-import { ApiError, login } from '../../lib/api';
-import { writeSession } from '../../lib/auth-storage';
+import { ApiError, getCurrentUser, login } from '../../lib/api';
+import { clearSession, readAccessToken, writeSession } from '../../lib/auth-storage';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const accessToken = readAccessToken();
+
+    if (!accessToken) {
+      setIsCheckingSession(false);
+      return;
+    }
+
+    getCurrentUser(accessToken)
+      .then(() => {
+        router.replace('/');
+      })
+      .catch(() => {
+        clearSession();
+        setIsCheckingSession(false);
+      });
+  }, [router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,6 +50,14 @@ export default function LoginPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (isCheckingSession) {
+    return (
+      <main className="loadingShell">
+        <Loader2 className="spin" size={24} />
+      </main>
+    );
   }
 
   return (
@@ -83,7 +110,7 @@ export default function LoginPage() {
             </p>
           : null}
 
-          <button className="primaryButton" disabled={isSubmitting} type="submit">
+          <button className="primaryButton" disabled={isSubmitting || !email || !password} type="submit">
             {isSubmitting ?
               <Loader2 className="spin" size={18} />
             : <LogIn size={18} />}

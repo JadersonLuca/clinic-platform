@@ -14,7 +14,7 @@ RUN pnpm --filter @clinic/database build \
   && pnpm --filter @clinic/api build
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV API_PORT=3000
 
 EXPOSE 3000
 
