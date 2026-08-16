@@ -64,7 +64,7 @@ export class MessagingService {
         .where(and(eq(messagingConnections.id, existing.id), eq(messagingConnections.tenantId, user.tenantId)))
         .returning();
 
-      return { connection: this.toView(row) };
+      return this.refreshStatus(user, row.id);
     }
 
     const [row] = await this.databaseService.db
@@ -82,7 +82,7 @@ export class MessagingService {
       })
       .returning();
 
-    return { connection: this.toView(row) };
+    return this.refreshStatus(user, row.id);
   }
 
   async refreshStatus(user: AuthenticatedUser, connectionId: string): Promise<{ connection: MessagingConnectionView }> {
@@ -97,7 +97,7 @@ export class MessagingService {
         .set({
           status: status.status,
           connectedPhone: status.connectedPhone ?? connection.connectedPhone,
-          lastError: status.error ?? null,
+          lastError: status.connected ? null : (status.error ?? null),
           lastStatusAt: new Date(),
           updatedAt: new Date(),
         })
