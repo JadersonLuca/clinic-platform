@@ -41,12 +41,17 @@ export class ZApiProvider implements MessagingProviderClient<ZApiCredentials> {
   }
 
   private async request<T>(credentials: ZApiCredentials, path: string): Promise<T> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (credentials.clientToken) {
+      headers['Client-Token'] = credentials.clientToken;
+    }
+
     const response = await fetch(this.buildUrl(credentials, path), {
       method: 'GET',
-      headers: {
-        'Client-Token': credentials.clientToken,
-        'Content-Type': 'application/json',
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -63,4 +68,3 @@ export class ZApiProvider implements MessagingProviderClient<ZApiCredentials> {
     return `${this.baseUrl.replace(/\/$/, '')}/instances/${instanceId}/token/${token}/${path}`;
   }
 }
-

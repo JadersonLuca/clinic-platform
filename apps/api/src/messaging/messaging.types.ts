@@ -5,7 +5,7 @@ export type MessagingConnectionStatus = 'not_configured' | 'disconnected' | 'qr_
 export interface ZApiCredentials {
   instanceId: string;
   token: string;
-  clientToken: string;
+  clientToken?: string;
 }
 
 export interface MessagingConnectionView {

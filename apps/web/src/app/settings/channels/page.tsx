@@ -223,14 +223,14 @@ export default function ChannelsSettingsPage() {
           </label>
 
           <label className="field">
-            <span>Client-Token</span>
+            <span>Client-Token opcional</span>
             <input
               value={clientToken}
               onChange={(event) => setClientToken(event.target.value)}
-              placeholder={connection?.credentialsConfigured ? 'Client-Token já salvo' : ''}
-              required={!connection?.credentialsConfigured}
+              placeholder={connection?.credentialsConfigured ? 'Preencha só se sua conta usa token de segurança' : ''}
               type="password"
             />
+            <small className="fieldHint">Use apenas se o token de segurança da conta estiver ativado na Z-API.</small>
           </label>
 
           {error ? <div className="formError">{error}</div> : null}

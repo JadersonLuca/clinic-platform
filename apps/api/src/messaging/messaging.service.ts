@@ -213,14 +213,14 @@ export class MessagingService {
     const token = input.token?.trim() || readString(currentCredentials, 'token') || '';
     const clientToken = input.clientToken?.trim() || readString(currentCredentials, 'clientToken') || '';
 
-    if (!name || !instanceId || !token || !clientToken) {
-      throw new BadRequestException('name, instanceId, token and clientToken are required');
+    if (!name || !instanceId || !token) {
+      throw new BadRequestException('name, instanceId and token are required');
     }
 
     return {
       instanceId,
       token,
-      clientToken,
+      ...(clientToken ? { clientToken } : {}),
     };
   }
 
@@ -229,14 +229,14 @@ export class MessagingService {
     const token = readString(credentials, 'token');
     const clientToken = readString(credentials, 'clientToken');
 
-    if (!instanceId || !token || !clientToken) {
+    if (!instanceId || !token) {
       throw new BadRequestException('Z-API credentials are not configured');
     }
 
     return {
       instanceId,
       token,
-      clientToken,
+      ...(clientToken ? { clientToken } : {}),
     };
   }
 
@@ -249,8 +249,7 @@ export class MessagingService {
       status: row.status,
       externalInstanceId: row.externalInstanceId,
       connectedPhone: row.connectedPhone,
-      credentialsConfigured:
-        Boolean(row.credentials.instanceId) && Boolean(row.credentials.token) && Boolean(row.credentials.clientToken),
+      credentialsConfigured: Boolean(row.credentials.instanceId) && Boolean(row.credentials.token),
       lastError: row.lastError,
       lastStatusAt: row.lastStatusAt,
       createdAt: row.createdAt,

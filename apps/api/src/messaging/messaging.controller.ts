@@ -34,7 +34,7 @@ export class MessagingController {
       (body.token !== undefined && typeof body.token !== 'string') ||
       (body.clientToken !== undefined && typeof body.clientToken !== 'string')
     ) {
-      throw new BadRequestException('name, instanceId, token and clientToken are required');
+      throw new BadRequestException('name, instanceId and token are required');
     }
 
     return this.messagingService.saveZApiConnection(user, {
