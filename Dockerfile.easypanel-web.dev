@@ -1,0 +1,18 @@
+FROM node:24-bookworm-slim
+
+WORKDIR /app
+
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps ./apps
+COPY packages ./packages
+
+RUN pnpm install --frozen-lockfile
+
+ENV NODE_ENV=development
+ENV WEB_PORT=3000
+
+EXPOSE 3000
+
+CMD ["pnpm", "--filter", "@clinic/web", "dev"]
