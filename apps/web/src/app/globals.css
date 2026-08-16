@@ -155,6 +155,76 @@ button {
   padding: 10px 12px;
 }
 
+.toastViewport {
+  display: grid;
+  position: fixed;
+  z-index: 80;
+  top: 18px;
+  right: 18px;
+  gap: 10px;
+  width: min(calc(100vw - 36px), 380px);
+}
+
+.toast {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  padding: 12px;
+}
+
+.toast svg {
+  color: var(--brand);
+}
+
+.toast span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.toast button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.toast button:hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.toastsuccess {
+  border-color: rgba(15, 118, 110, 0.22);
+}
+
+.toastwarning {
+  border-color: rgba(183, 121, 31, 0.28);
+}
+
+.toastwarning svg {
+  color: var(--amber);
+}
+
+.toasterror {
+  border-color: rgba(190, 18, 60, 0.26);
+}
+
+.toasterror svg {
+  color: var(--rose);
+}
+
 .primaryButton {
   display: inline-flex;
   align-items: center;
@@ -812,6 +882,244 @@ time {
   line-height: 1.5;
 }
 
+.attendanceShell {
+  min-height: calc(100vh - 60px);
+}
+
+.attendanceHeader {
+  max-width: 1280px;
+}
+
+.attendanceLayout {
+  display: grid;
+  grid-template-columns: minmax(280px, 370px) minmax(0, 1fr);
+  gap: 16px;
+  margin: 0 auto;
+  max-width: 1280px;
+  min-height: calc(100vh - 150px);
+}
+
+.attendanceSidebar,
+.attendanceThread {
+  min-height: 0;
+}
+
+.attendanceSidebar {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+}
+
+.attendanceSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  color: var(--muted);
+  padding: 0 12px;
+}
+
+.attendanceSearch input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.attendanceList {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.attendanceConversation {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 66px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  padding: 8px;
+  text-align: left;
+}
+
+.attendanceConversation:hover,
+.attendanceConversation.active {
+  border-color: var(--line);
+  background: #fbfdfc;
+}
+
+.attendanceConversation.active {
+  border-color: rgba(15, 118, 110, 0.28);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.10);
+}
+
+.attendanceConversationText {
+  min-width: 0;
+}
+
+.attendanceConversationText strong,
+.attendanceConversationText small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attendanceConversationText strong {
+  font-size: 14px;
+}
+
+.attendanceConversationText small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.attendanceThread {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.threadHeader,
+.composer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.threadHeader {
+  border-bottom: 1px solid var(--line);
+}
+
+.threadIdentity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.threadIdentity strong,
+.threadIdentity span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.threadIdentity span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.messageList {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  background: #eef3f1;
+  padding: 16px;
+}
+
+.messageBubble {
+  max-width: min(72%, 680px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 10px 12px;
+}
+
+.messageBubble.out {
+  align-self: flex-end;
+  border-color: rgba(15, 118, 110, 0.20);
+  background: var(--mint);
+}
+
+.messageBubble.in {
+  align-self: flex-start;
+}
+
+.messageBubble p {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.messageBubble span {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+}
+
+.composer {
+  border-top: 1px solid var(--line);
+}
+
+.composer input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: 0;
+  padding: 0 12px;
+}
+
+.composer input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+.emptyState,
+.emptyThread,
+.messageLoading {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.emptyState {
+  min-height: 180px;
+  padding: 22px;
+}
+
+.emptyState strong,
+.emptyThread strong {
+  color: var(--text);
+}
+
+.emptyState span,
+.emptyThread span {
+  max-width: 280px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.emptyThread,
+.messageLoading {
+  min-height: 360px;
+}
+
 .connectionForm {
   display: grid;
   gap: 16px;
@@ -890,6 +1198,21 @@ time {
   gap: 8px;
 }
 
+.connectionRowActions .textButton {
+  white-space: nowrap;
+}
+
+.dangerTextButton {
+  border-color: rgba(190, 18, 60, 0.24);
+  background: rgba(190, 18, 60, 0.08);
+  color: var(--rose);
+}
+
+.dangerTextButton:hover:not(:disabled) {
+  border-color: rgba(190, 18, 60, 0.36);
+  background: rgba(190, 18, 60, 0.12);
+}
+
 .providerStrip {
   display: flex;
   align-items: center;
@@ -909,6 +1232,13 @@ time {
   border-radius: 8px;
   background: var(--mint);
   color: var(--brand-strong);
+  line-height: 0;
+}
+
+.providerIcon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
 }
 
 .providerStrip strong,
@@ -1105,6 +1435,7 @@ time {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 38px;
   border: 1px solid rgba(190, 18, 60, 0.22);
   border-radius: 8px;
@@ -1335,7 +1666,8 @@ time {
   }
 
   .connectionLayout,
-  .teamLayout {
+  .teamLayout,
+  .attendanceLayout {
     grid-template-columns: 1fr;
   }
 }
@@ -1410,5 +1742,28 @@ time {
   .mode,
   time {
     justify-self: start;
+  }
+
+  .attendanceLayout {
+    min-height: auto;
+  }
+
+  .attendanceSidebar,
+  .attendanceThread {
+    min-height: 420px;
+  }
+
+  .threadHeader,
+  .composer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .threadHeader .mode {
+    justify-self: stretch;
+  }
+
+  .messageBubble {
+    max-width: 92%;
   }
 }

@@ -4,11 +4,6 @@ WORKDIR /app
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps ./apps
-COPY packages ./packages
-COPY docker ./docker
-
 ENV NODE_ENV=development
 
 CMD ["sh", "docker/easypanel/worker-dev.sh"]

@@ -53,16 +53,16 @@ Para subir direto pelo EasyPanel usando build por Dockerfile, use estes arquivos
 - Web: `Dockerfile.easypanel-web.dev`
 - Worker: `Dockerfile.easypanel-worker.dev`
 
-Importante: o contexto de build precisa ser a raiz deste monorepo. Esses Dockerfiles fazem `COPY` de `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `apps/` e `packages/`.
+Importante: estes Dockerfiles sao para o modo com bind mount em `/app`. Eles nao fazem `COPY` do projeto durante o build.
 
-Se o EasyPanel enviar apenas o Dockerfile ou usar uma pasta vazia/parcial como contexto, o build vai falhar com erros como `"/package.json": not found`, `"/apps": not found` ou `"/packages": not found`.
+Esse formato funciona quando o EasyPanel envia apenas o Dockerfile como contexto de build. O codigo entra no container em tempo de execucao pelo bind mount.
 
-Bind mount/volume no container nao corrige isso. O mount so existe em tempo de execucao; o `docker build` continua usando apenas o contexto enviado para o build.
+Sem o bind mount da raiz do projeto para `/app`, o container nao vai encontrar `package.json`, `apps/`, `packages/` nem os scripts em `docker/easypanel`.
 
 Configuração esperada no EasyPanel:
 
-- repositório ou upload contendo o monorepo completo
-- build context na raiz do projeto
+- Dockerfile colado direto no EasyPanel ou selecionado no projeto
+- bind mount da raiz do projeto no servidor para `/app`
 - Dockerfile da API: `Dockerfile.easypanel-api.dev`
 - Dockerfile do Web: `Dockerfile.easypanel-web.dev`
 - Dockerfile do Worker: `Dockerfile.easypanel-worker.dev`
@@ -73,7 +73,7 @@ Configuração sugerida:
 - Web: porta `3000`, comando padrão do Dockerfile.
 - Worker: sem porta pública, comando padrão do Dockerfile.
 
-Se usar bind mount no EasyPanel, monte a raiz do projeto em `/app`. Estes Dockerfiles de desenvolvimento instalam as dependências e compilam os pacotes internos na inicialização, porque o bind mount substitui o conteúdo gerado durante o build da imagem.
+Monte a raiz do projeto em `/app`. Estes Dockerfiles de desenvolvimento instalam as dependências e compilam os pacotes internos na inicialização, porque o bind mount substitui qualquer conteúdo gerado durante o build da imagem.
 
 Variáveis mínimas para desenvolvimento:
 

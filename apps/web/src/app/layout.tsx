@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { AppShell } from './AppShell';
 import './globals.css';
+import { ToastProvider } from './ToastProvider';
 
 export const metadata: Metadata = {
   title: 'Clinic Platform',
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <AppShell>{children}</AppShell>
+        <ToastProvider>
+          <AppShell>{children}</AppShell>
+        </ToastProvider>
       </body>
     </html>
   );

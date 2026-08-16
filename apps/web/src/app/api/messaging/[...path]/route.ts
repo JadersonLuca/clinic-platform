@@ -16,10 +16,14 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
   return proxyMessagingRequest(request, context, 'POST');
 }
 
+export async function DELETE(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+  return proxyMessagingRequest(request, context, 'DELETE');
+}
+
 async function proxyMessagingRequest(
   request: NextRequest,
   context: RouteContext,
-  method: 'GET' | 'POST',
+  method: 'DELETE' | 'GET' | 'POST',
 ): Promise<NextResponse> {
   const accessToken = request.cookies.get(authCookieName)?.value;
 

@@ -29,6 +29,13 @@
       "when": 1786840000000,
       "tag": "0003_superadmin_role",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786843600000,
+      "tag": "0004_messaging_attendance",
+      "breakpoints": true
     }
   ]
 }

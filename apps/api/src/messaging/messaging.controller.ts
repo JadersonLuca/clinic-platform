@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -9,6 +9,11 @@ interface SaveZApiConnectionBody {
   instanceId?: unknown;
   token?: unknown;
   clientToken?: unknown;
+}
+
+interface SendConversationTextBody {
+  message?: unknown;
+  replyToMessageId?: unknown;
 }
 
 @Controller('messaging')
@@ -30,11 +35,11 @@ export class MessagingController {
   saveZApiConnection(@CurrentUser() user: AuthenticatedUser, @Body() body: SaveZApiConnectionBody) {
     if (
       typeof body.name !== 'string' ||
-      typeof body.instanceId !== 'string' ||
+      (body.instanceId !== undefined && typeof body.instanceId !== 'string') ||
       (body.token !== undefined && typeof body.token !== 'string') ||
       (body.clientToken !== undefined && typeof body.clientToken !== 'string')
     ) {
-      throw new BadRequestException('name, instanceId and token are required');
+      throw new BadRequestException('name and Z-API credentials are required');
     }
 
     return this.messagingService.saveZApiConnection(user, {
@@ -53,5 +58,45 @@ export class MessagingController {
   @Post('connections/:connectionId/qr-code')
   getQrCode(@CurrentUser() user: AuthenticatedUser, @Param('connectionId') connectionId: string) {
     return this.messagingService.getQrCode(user, connectionId);
+  }
+
+  @Post('connections/:connectionId/disconnect')
+  disconnectConnection(@CurrentUser() user: AuthenticatedUser, @Param('connectionId') connectionId: string) {
+    return this.messagingService.disconnectConnection(user, connectionId);
+  }
+
+  @Delete('connections/:connectionId')
+  deleteConnection(@CurrentUser() user: AuthenticatedUser, @Param('connectionId') connectionId: string) {
+    return this.messagingService.deleteConnection(user, connectionId);
+  }
+
+  @Get('conversations')
+  listConversations(@CurrentUser() user: AuthenticatedUser) {
+    return this.messagingService.listConversations(user);
+  }
+
+  @Get('conversations/:conversationId/messages')
+  listMessages(@CurrentUser() user: AuthenticatedUser, @Param('conversationId') conversationId: string) {
+    return this.messagingService.listMessages(user, conversationId);
+  }
+
+  @Post('conversations/:conversationId/messages')
+  sendText(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('conversationId') conversationId: string,
+    @Body() body: SendConversationTextBody,
+  ) {
+    if (
+      typeof body.message !== 'string' ||
+      (body.replyToMessageId !== undefined && typeof body.replyToMessageId !== 'string')
+    ) {
+      throw new BadRequestException('message is required');
+    }
+
+    return this.messagingService.sendConversationText(user, {
+      conversationId,
+      message: body.message,
+      replyToMessageId: body.replyToMessageId,
+    });
   }
 }

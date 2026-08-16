@@ -53,17 +53,58 @@ export type LoginResponse = LoginSuccessResponse | LoginMembershipSelectionRespo
 
 export type MessagingConnectionStatus = 'not_configured' | 'disconnected' | 'qr_pending' | 'connected' | 'error';
 
+export type MessagingProvider = 'zapi' | 'evolution';
+export type MessagingConversationMode = 'ai' | 'human' | 'paused';
+export type MessagingMessageStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'received' | 'failed';
+
 export interface MessagingConnection {
   id: string;
   name: string;
   channel: 'whatsapp';
-  provider: 'zapi';
+  provider: MessagingProvider;
   status: MessagingConnectionStatus;
   externalInstanceId: string | null;
   connectedPhone: string | null;
   credentialsConfigured: boolean;
   lastError: string | null;
   lastStatusAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MessagingConversation {
+  id: string;
+  connectionId: string;
+  provider: MessagingProvider;
+  waJid: string;
+  phone: string | null;
+  displayName: string | null;
+  isGroup: boolean;
+  mode: MessagingConversationMode;
+  lastMessagePreview: string | null;
+  lastMessageAt: string | null;
+  lastInboundAt: string | null;
+  unreadCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MessagingMessage {
+  id: string;
+  conversationId: string;
+  connectionId: string;
+  provider: MessagingProvider;
+  externalMessageId: string;
+  direction: 'in' | 'out';
+  messageType: 'text' | 'image' | 'audio' | 'video' | 'document';
+  status: MessagingMessageStatus;
+  senderJid: string | null;
+  senderName: string | null;
+  body: string | null;
+  replyToExternalMessageId: string | null;
+  media: Record<string, unknown>;
+  sentAt: string | null;
+  receivedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -137,7 +178,7 @@ export async function getPrimaryWhatsappConnection(): Promise<{ connection: Mess
 
 export async function saveZApiConnection(input: {
   name: string;
-  instanceId: string;
+  instanceId?: string;
   token?: string;
   clientToken?: string;
 }): Promise<{ connection: MessagingConnection }> {
@@ -158,6 +199,47 @@ export async function refreshMessagingConnectionStatus(
 export async function getMessagingConnectionQrCode(connectionId: string): Promise<{ qrCode: string }> {
   return apiRequest<{ qrCode: string }>(`/api/messaging/connections/${connectionId}/qr-code`, {
     method: 'POST',
+  });
+}
+
+export async function disconnectMessagingConnection(
+  connectionId: string,
+): Promise<{ connection: MessagingConnection }> {
+  return apiRequest<{ connection: MessagingConnection }>(`/api/messaging/connections/${connectionId}/disconnect`, {
+    method: 'POST',
+  });
+}
+
+export async function deleteMessagingConnection(connectionId: string): Promise<{ ok: true }> {
+  return apiRequest<{ ok: true }>(`/api/messaging/connections/${connectionId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function listMessagingConversations(): Promise<{ conversations: MessagingConversation[] }> {
+  return apiRequest<{ conversations: MessagingConversation[] }>('/api/messaging/conversations', {
+    method: 'GET',
+  });
+}
+
+export async function listMessagingMessages(
+  conversationId: string,
+): Promise<{ conversation: MessagingConversation; messages: MessagingMessage[] }> {
+  return apiRequest<{ conversation: MessagingConversation; messages: MessagingMessage[] }>(
+    `/api/messaging/conversations/${conversationId}/messages`,
+    {
+      method: 'GET',
+    },
+  );
+}
+
+export async function sendMessagingText(
+  conversationId: string,
+  input: { message: string; replyToMessageId?: string },
+): Promise<{ message: MessagingMessage }> {
+  return apiRequest<{ message: MessagingMessage }>(`/api/messaging/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify(input),
   });
 }
 
