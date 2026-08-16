@@ -243,6 +243,22 @@ export async function sendMessagingText(
   });
 }
 
+export async function deleteMessagingConversation(conversationId: string): Promise<{ ok: true }> {
+  return apiRequest<{ ok: true }>(`/api/messaging/conversations/${conversationId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function deleteMessagingMessage(messageId: string): Promise<{ ok: true }> {
+  return apiRequest<{ ok: true }>(`/api/messaging/messages/${messageId}`, {
+    method: 'DELETE',
+  });
+}
+
+export function getMessagingMessageMediaUrl(messageId: string): string {
+  return `/api/messaging/messages/${messageId}/media`;
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
     ...init,

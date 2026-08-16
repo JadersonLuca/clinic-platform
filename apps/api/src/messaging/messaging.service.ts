@@ -6,6 +6,9 @@ import {
 } from '@clinic/database';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
+import { createReadStream, type ReadStream } from 'node:fs';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
+import { basename, extname, join, resolve } from 'node:path';
 import { DatabaseService } from '../database/database.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { ZApiProvider } from './providers/zapi.provider';
@@ -38,6 +41,8 @@ interface NormalizedWebhook {
 
 @Injectable()
 export class MessagingService {
+  private readonly mediaDirectory = resolve(process.env.MESSAGING_MEDIA_DIR ?? join(process.cwd(), 'storage', 'messaging-media'));
+
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly zApiProvider: ZApiProvider,
@@ -243,6 +248,52 @@ export class MessagingService {
     };
   }
 
+  async deleteConversation(user: AuthenticatedUser, conversationId: string): Promise<{ ok: true }> {
+    const conversation = await this.findTenantConversation(user.tenantId, conversationId);
+    const rows = await this.databaseService.db
+      .select()
+      .from(messagingMessages)
+      .where(and(eq(messagingMessages.tenantId, user.tenantId), eq(messagingMessages.conversationId, conversation.id)));
+
+    await this.databaseService.db
+      .delete(messagingConversations)
+      .where(and(eq(messagingConversations.id, conversation.id), eq(messagingConversations.tenantId, user.tenantId)));
+
+    await Promise.all(rows.map((row) => this.deleteLocalMedia(row.media)));
+
+    return { ok: true };
+  }
+
+  async deleteMessage(user: AuthenticatedUser, messageId: string): Promise<{ ok: true }> {
+    const message = await this.findTenantMessage(user.tenantId, messageId);
+    await this.databaseService.db
+      .delete(messagingMessages)
+      .where(and(eq(messagingMessages.id, message.id), eq(messagingMessages.tenantId, user.tenantId)));
+    await this.deleteLocalMedia(message.media);
+    await this.recalculateConversationPreview(message.conversationId);
+
+    return { ok: true };
+  }
+
+  async getMessageMedia(
+    user: AuthenticatedUser,
+    messageId: string,
+  ): Promise<{ stream: ReadStream; mimeType: string; size: number }> {
+    const message = await this.findTenantMessage(user.tenantId, messageId);
+    const localPath = readString(message.media, 'localPath');
+    const size = readNumber(message.media, 'size') ?? 0;
+
+    if (!localPath || !isPathInside(localPath, this.mediaDirectory)) {
+      throw new NotFoundException('Message media not found');
+    }
+
+    return {
+      stream: createReadStream(localPath),
+      mimeType: readString(message.media, 'mimeType') ?? 'application/octet-stream',
+      size,
+    };
+  }
+
   async sendConversationText(
     user: AuthenticatedUser,
     input: SendConversationTextInput,
@@ -437,7 +488,7 @@ export class MessagingService {
     const status = normalizeMessageStatus(readString(data, 'status'), fromMe);
     const timestamp = new Date(normalized.timestamp * 1000);
     const message = readRecord(data, 'message');
-    const media = readRecord(data, 'media') ?? {};
+    const media = await this.persistIncomingMedia(readRecord(data, 'media') ?? {}, connection.id, externalMessageId);
     const body = readString(message, 'conversation') ?? readString(media, 'caption') ?? '';
     const messageType = inferMessageType(media);
     const conversation = await this.upsertConversation(connection, {
@@ -662,6 +713,92 @@ export class MessagingService {
     }
 
     return row;
+  }
+
+  private async findTenantMessage(tenantId: string, messageId: string): Promise<MessagingMessageRow> {
+    const [row] = await this.databaseService.db
+      .select()
+      .from(messagingMessages)
+      .where(and(eq(messagingMessages.id, messageId), eq(messagingMessages.tenantId, tenantId)))
+      .limit(1);
+
+    if (!row) {
+      throw new NotFoundException('Message not found');
+    }
+
+    return row;
+  }
+
+  private async recalculateConversationPreview(conversationId: string): Promise<void> {
+    const [lastMessage] = await this.databaseService.db
+      .select()
+      .from(messagingMessages)
+      .where(eq(messagingMessages.conversationId, conversationId))
+      .orderBy(desc(messagingMessages.createdAt))
+      .limit(1);
+
+    await this.databaseService.db
+      .update(messagingConversations)
+      .set({
+        lastMessagePreview: lastMessage ? lastMessage.body || `[${lastMessage.messageType}]` : null,
+        lastMessageAt: lastMessage?.createdAt ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(messagingConversations.id, conversationId));
+  }
+
+  private async persistIncomingMedia(
+    media: Record<string, unknown>,
+    connectionId: string,
+    externalMessageId: string,
+  ): Promise<Record<string, unknown>> {
+    const type = inferMessageType(media);
+
+    if (type === 'text') {
+      return media;
+    }
+
+    const base64 = readString(media, 'base64');
+    const url = readString(media, 'url');
+
+    if (!base64 && !url) {
+      return media;
+    }
+
+    try {
+      const mimeType = readString(media, 'mimeType') ?? 'application/octet-stream';
+      const buffer = base64 ? decodeBase64Media(base64) : await downloadMedia(url as string);
+      const extension = mediaExtension(readString(media, 'fileName'), mimeType, type);
+      const directory = join(this.mediaDirectory, connectionId);
+      const fileName = `${sanitizeFileName(externalMessageId)}${extension}`;
+      const localPath = join(directory, fileName);
+
+      await mkdir(directory, { recursive: true });
+      await writeFile(localPath, buffer);
+
+      return {
+        ...media,
+        mimeType,
+        localPath,
+        size: buffer.length,
+        storedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        ...media,
+        storageError: error instanceof Error ? error.message : 'Unable to store media',
+      };
+    }
+  }
+
+  private async deleteLocalMedia(media: Record<string, unknown>): Promise<void> {
+    const localPath = readString(media, 'localPath');
+
+    if (!localPath || !isPathInside(localPath, this.mediaDirectory)) {
+      return;
+    }
+
+    await unlink(localPath).catch(() => undefined);
   }
 
   private async findConnectionByProviderInstance(
@@ -987,6 +1124,60 @@ function readNumber(value: Record<string, unknown> | null | undefined, key: stri
   }
 
   return null;
+}
+
+async function downloadMedia(url: string): Promise<Buffer> {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Media download failed with status ${response.status}`);
+  }
+
+  return Buffer.from(await response.arrayBuffer());
+}
+
+function decodeBase64Media(value: string): Buffer {
+  const payload = value.includes(',') ? value.split(',').pop() || '' : value;
+
+  return Buffer.from(payload, 'base64');
+}
+
+function mediaExtension(fileName: string | null, mimeType: string, type: MessagingMessageType): string {
+  const existing = fileName ? extname(basename(fileName)) : '';
+
+  if (existing) {
+    return existing;
+  }
+
+  switch (mimeType) {
+    case 'image/jpeg':
+      return '.jpg';
+    case 'image/png':
+      return '.png';
+    case 'image/webp':
+      return '.webp';
+    case 'audio/ogg':
+      return '.ogg';
+    case 'audio/mpeg':
+      return '.mp3';
+    case 'video/mp4':
+      return '.mp4';
+    case 'application/pdf':
+      return '.pdf';
+    default:
+      return type === 'image' ? '.img' : type === 'audio' ? '.audio' : type === 'video' ? '.video' : '.bin';
+  }
+}
+
+function sanitizeFileName(value: string): string {
+  return value.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 160) || `media_${Date.now()}`;
+}
+
+function isPathInside(filePath: string, directory: string): boolean {
+  const resolvedFile = resolve(filePath);
+  const resolvedDirectory = resolve(directory);
+
+  return resolvedFile === resolvedDirectory || resolvedFile.startsWith(`${resolvedDirectory}/`);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

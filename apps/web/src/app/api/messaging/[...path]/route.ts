@@ -56,5 +56,18 @@ async function proxyMessagingRequest(
     return jsonError(await readApiError(response, 'Não foi possível concluir a solicitação.'), response.status);
   }
 
-  return NextResponse.json(await response.json());
+  const contentType = response.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    return NextResponse.json(await response.json());
+  }
+
+  return new NextResponse(response.body, {
+    status: response.status,
+    headers: {
+      'Content-Type': contentType || 'application/octet-stream',
+      ...(response.headers.get('content-length') ? { 'Content-Length': response.headers.get('content-length') as string } : {}),
+      ...(response.headers.get('cache-control') ? { 'Cache-Control': response.headers.get('cache-control') as string } : {}),
+    },
+  });
 }

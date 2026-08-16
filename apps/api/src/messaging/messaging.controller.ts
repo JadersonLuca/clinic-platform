@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -14,6 +14,11 @@ interface SaveZApiConnectionBody {
 interface SendConversationTextBody {
   message?: unknown;
   replyToMessageId?: unknown;
+}
+
+interface BinaryReply {
+  header(name: string, value: number | string): BinaryReply;
+  send(payload: unknown): unknown;
 }
 
 @Controller('messaging')
@@ -80,6 +85,11 @@ export class MessagingController {
     return this.messagingService.listMessages(user, conversationId);
   }
 
+  @Delete('conversations/:conversationId')
+  deleteConversation(@CurrentUser() user: AuthenticatedUser, @Param('conversationId') conversationId: string) {
+    return this.messagingService.deleteConversation(user, conversationId);
+  }
+
   @Post('conversations/:conversationId/messages')
   sendText(
     @CurrentUser() user: AuthenticatedUser,
@@ -98,5 +108,25 @@ export class MessagingController {
       message: body.message,
       replyToMessageId: body.replyToMessageId,
     });
+  }
+
+  @Delete('messages/:messageId')
+  deleteMessage(@CurrentUser() user: AuthenticatedUser, @Param('messageId') messageId: string) {
+    return this.messagingService.deleteMessage(user, messageId);
+  }
+
+  @Get('messages/:messageId/media')
+  async getMessageMedia(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('messageId') messageId: string,
+    @Res() reply: BinaryReply,
+  ) {
+    const media = await this.messagingService.getMessageMedia(user, messageId);
+
+    reply.header('Content-Type', media.mimeType);
+    reply.header('Content-Length', media.size);
+    reply.header('Cache-Control', 'private, max-age=3600');
+
+    return reply.send(media.stream);
   }
 }
