@@ -168,6 +168,12 @@ button {
   font-weight: 800;
 }
 
+.compactButton {
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+}
+
 .primaryButton:disabled {
   cursor: not-allowed;
   opacity: 0.72;
@@ -257,6 +263,7 @@ button {
 
 .brand,
 .sidebarStatus,
+.sidebarLogout,
 .navItem,
 .topbar,
 .topbarActions,
@@ -329,6 +336,7 @@ button {
 
 .sidebarCollapsed .brand div:last-child,
 .sidebarCollapsed .navItem span,
+.sidebarCollapsed .sidebarLogout span,
 .sidebarCollapsed .sidebarStatus div {
   display: none;
 }
@@ -347,6 +355,12 @@ button {
   padding: 0;
 }
 
+.sidebarCollapsed .sidebarLogout {
+  justify-content: center;
+  width: 48px;
+  padding: 0;
+}
+
 .navItem.active,
 .navItem:hover {
   background: rgba(255, 255, 255, 0.10);
@@ -355,10 +369,30 @@ button {
 
 .sidebarStatus {
   gap: 10px;
-  margin-top: auto;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 14px;
+}
+
+.sidebarLogout {
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 42px;
+  margin-top: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f7fbf9;
+  padding: 0 12px;
+  font-weight: 800;
+}
+
+.sidebarLogout:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.nav {
+  margin-bottom: auto;
 }
 
 .workspace {
@@ -725,6 +759,12 @@ time {
   max-width: 1180px;
 }
 
+.settingsActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .connectionLayout {
   display: grid;
   grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.25fr);
@@ -741,6 +781,10 @@ time {
   gap: 16px;
   margin: 0 auto;
   max-width: 1180px;
+}
+
+.teamLayout.singleColumn {
+  grid-template-columns: 1fr;
 }
 
 .placeholderGrid {
@@ -781,6 +825,69 @@ time {
 .connectionPanel {
   display: grid;
   gap: 16px;
+}
+
+.connectionList {
+  display: grid;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.connectionRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(140px, 0.65fr) minmax(150px, 0.75fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 860px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.connectionIdentity,
+.connectionCell,
+.connectionRowActions {
+  display: flex;
+  align-items: center;
+}
+
+.connectionIdentity {
+  gap: 10px;
+  min-width: 0;
+}
+
+.connectionIdentity strong,
+.connectionIdentity span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connectionIdentity span,
+.connectionCell {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.connectionCell {
+  gap: 7px;
+  min-width: 0;
+}
+
+.connectionCell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connectionCell svg {
+  flex: 0 0 auto;
+  color: var(--brand);
+}
+
+.connectionRowActions {
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .providerStrip {
@@ -828,10 +935,10 @@ time {
 
 .teamRow {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(120px, 150px) minmax(110px, 130px) 42px auto;
+  grid-template-columns: minmax(180px, 1fr) auto 42px auto;
   align-items: center;
   gap: 12px;
-  min-width: 690px;
+  min-width: 520px;
   border-top: 1px solid var(--line);
   padding-top: 12px;
 }
@@ -897,6 +1004,33 @@ time {
   white-space: nowrap;
 }
 
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 9px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.statusactive {
+  background: var(--mint);
+  color: var(--brand-strong);
+}
+
+.statusinactive {
+  background: rgba(190, 18, 60, 0.08);
+  color: var(--rose);
+}
+
+.statusinvited {
+  background: #fef3c7;
+  color: var(--amber);
+}
+
 .modalOverlay {
   display: grid;
   position: fixed;
@@ -935,10 +1069,36 @@ time {
   color: var(--rose);
 }
 
+.formModal {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 480px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.modalHeader h2 {
+  overflow-wrap: anywhere;
+}
+
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.resetButton {
+  justify-self: start;
 }
 
 .dangerButton {
@@ -1124,6 +1284,14 @@ time {
   color: var(--brand);
 }
 
+.compactQrBox {
+  min-height: 220px;
+}
+
+.compactQrBox img {
+  width: min(100%, 220px);
+}
+
 @media (max-width: 1120px) {
   .shell {
     grid-template-columns: 92px minmax(0, 1fr);
@@ -1136,6 +1304,7 @@ time {
 
   .brand div:last-child,
   .navItem span,
+  .sidebarLogout span,
   .sidebarStatus div {
     display: none;
   }
@@ -1149,6 +1318,12 @@ time {
   }
 
   .navItem {
+    justify-content: center;
+    width: 48px;
+    padding: 0;
+  }
+
+  .sidebarLogout {
     justify-content: center;
     width: 48px;
     padding: 0;
@@ -1185,7 +1360,8 @@ time {
   .topbar,
   .topbarActions,
   .clinicPanel,
-  .settingsHeader {
+  .settingsHeader,
+  .settingsActions {
     align-items: stretch;
     flex-direction: column;
   }

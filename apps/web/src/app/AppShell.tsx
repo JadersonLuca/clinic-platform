@@ -142,6 +142,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>{user?.role ?? 'sessão'}</span>
           </div>
         </div>
+
+        <button
+          className="sidebarLogout"
+          onClick={() => setIsLogoutModalOpen(true)}
+          title="Sair"
+          type="button"
+        >
+          <LogOut size={18} />
+          <span>Sair</span>
+        </button>
       </aside>
 
       <section className="workspace">
@@ -164,9 +174,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </label>
             <button className="iconButton" aria-label="Notificações" type="button">
               <Bell size={18} />
-            </button>
-            <button className="iconButton" aria-label="Sair" onClick={() => setIsLogoutModalOpen(true)} type="button">
-              <LogOut size={18} />
             </button>
           </div>
         </header>

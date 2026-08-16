@@ -3,19 +3,16 @@
 import {
   CheckCircle2,
   Clock3,
-  CircleAlert,
-  Copy,
-  KeyRound,
+  Edit3,
   Loader2,
   MessageCircle,
+  Plus,
   QrCode,
   RefreshCw,
   Save,
-  ServerCog,
-  ShieldCheck,
   Smartphone,
   Unplug,
-  Wifi,
+  X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
@@ -38,10 +35,10 @@ const statusLabel: Record<string, string> = {
 export default function ChannelsSettingsPage() {
   const router = useRouter();
   const [connection, setConnection] = useState<MessagingConnection | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('WhatsApp principal');
   const [instanceId, setInstanceId] = useState('');
   const [token, setToken] = useState('');
-  const [clientToken, setClientToken] = useState('');
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -54,11 +51,6 @@ export default function ChannelsSettingsPage() {
     getPrimaryWhatsappConnection()
       .then((result) => {
         setConnection(result.connection);
-
-        if (result.connection) {
-          setName(result.connection.name);
-          setInstanceId(result.connection.externalInstanceId ?? '');
-        }
       })
       .catch(() => {
         router.replace('/login');
@@ -68,7 +60,7 @@ export default function ChannelsSettingsPage() {
       });
   }, [router]);
 
-  const statusClassName = useMemo(() => `connectionBadge status${connection?.status ?? 'not_configured'}`, [connection]);
+  const statusClassName = `connectionBadge status${connection?.status ?? 'not_configured'}`;
   const qrImageSrc = useMemo(() => {
     if (!qrCode) {
       return null;
@@ -76,7 +68,6 @@ export default function ChannelsSettingsPage() {
 
     return qrCode.startsWith('data:image') ? qrCode : `data:image/png;base64,${qrCode}`;
   }, [qrCode]);
-  const webhookPath = connection ? `/webhooks/zapi/connections/${connection.id}/connection` : null;
   const lastStatusAt =
     connection?.lastStatusAt ?
       new Intl.DateTimeFormat('pt-BR', {
@@ -84,6 +75,15 @@ export default function ChannelsSettingsPage() {
         timeStyle: 'short',
       }).format(new Date(connection.lastStatusAt))
     : 'Sem atualização';
+
+  function openConnectionModal() {
+    setError(null);
+    setNotice(null);
+    setName(connection?.name ?? 'WhatsApp principal');
+    setInstanceId(connection?.externalInstanceId ?? '');
+    setToken('');
+    setIsModalOpen(true);
+  }
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -93,13 +93,13 @@ export default function ChannelsSettingsPage() {
     setQrCode(null);
 
     try {
-      const result = await saveZApiConnection({ name, instanceId, token, clientToken });
+      const result = await saveZApiConnection({ name, instanceId, token, clientToken: '' });
       setConnection(result.connection);
       setToken('');
-      setClientToken('');
-      setNotice('Credenciais salvas.');
+      setIsModalOpen(false);
+      setNotice('Conexão salva.');
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Não foi possível salvar as credenciais.');
+      setError(saveError instanceof Error ? saveError.message : 'Não foi possível salvar a conexão.');
     } finally {
       setIsSaving(false);
     }
@@ -146,21 +146,6 @@ export default function ChannelsSettingsPage() {
     }
   }
 
-  async function handleCopyWebhook() {
-    if (!webhookPath) {
-      return;
-    }
-
-    setNotice(null);
-    setError(null);
-    try {
-      await navigator.clipboard.writeText(webhookPath);
-      setNotice('Endpoint copiado.');
-    } catch {
-      setError('Não foi possível copiar o endpoint.');
-    }
-  }
-
   if (isLoading) {
     return (
       <main className="loadingShell">
@@ -174,158 +159,154 @@ export default function ChannelsSettingsPage() {
       <header className="settingsHeader">
         <div>
           <span className="eyebrow">Canais</span>
-          <h1>Conexão do WhatsApp</h1>
+          <h1>Conexões de atendimento</h1>
         </div>
-        <a className="textButton" href="/">
-          Voltar
-        </a>
+        <button className="primaryButton compactButton" disabled={Boolean(connection)} onClick={openConnectionModal} type="button">
+          <Plus size={17} />
+          Nova conexão
+        </button>
       </header>
 
-      <section className="connectionLayout">
-        <form className="panel connectionForm" onSubmit={handleSave}>
+      <section className="teamLayout singleColumn">
+        <section className="panel connectionPanel">
           <div className="panelHeader">
             <div>
-              <span className="eyebrow">Provider</span>
-              <h2>Z-API</h2>
+              <span className="eyebrow">Conexões</span>
+              <h2>Canais ativos</h2>
             </div>
-            <KeyRound size={20} />
+            <MessageCircle size={20} />
           </div>
-
-          <div className="providerStrip">
-            <span className="providerIcon">
-              <MessageCircle size={18} />
-            </span>
-            <div>
-              <strong>WhatsApp via Z-API</strong>
-              <span>{connection?.credentialsConfigured ? 'Credenciais configuradas' : 'Credenciais pendentes'}</span>
-            </div>
-          </div>
-
-          <label className="field">
-            <span>Nome da conexão</span>
-            <input value={name} onChange={(event) => setName(event.target.value)} required />
-          </label>
-
-          <label className="field">
-            <span>Instance ID</span>
-            <input value={instanceId} onChange={(event) => setInstanceId(event.target.value)} required />
-          </label>
-
-          <label className="field">
-            <span>Token da instância</span>
-            <input
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-              placeholder={connection?.credentialsConfigured ? 'Token já salvo' : ''}
-              required={!connection?.credentialsConfigured}
-              type="password"
-            />
-          </label>
-
-          <label className="field">
-            <span>Client-Token opcional</span>
-            <input
-              value={clientToken}
-              onChange={(event) => setClientToken(event.target.value)}
-              placeholder={connection?.credentialsConfigured ? 'Deixe vazio para remover' : ''}
-              type="password"
-            />
-            <small className="fieldHint">Deixe vazio se sua Z-API usa apenas Instance ID e Token.</small>
-          </label>
 
           {error ? <div className="formError">{error}</div> : null}
           {notice ? <div className="formNotice">{notice}</div> : null}
 
-          <button className="primaryButton" disabled={isSaving} type="submit">
-            {isSaving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
-            Salvar credenciais
-          </button>
-        </form>
-
-        <section className="panel connectionPanel">
-          <div className="panelHeader">
-            <div>
-              <span className="eyebrow">Status</span>
-              <h2>{connection ? connection.name : 'WhatsApp principal'}</h2>
-            </div>
-            <span className={statusClassName}>
-              {connection?.status === 'connected' ? <CheckCircle2 size={16} /> : <Unplug size={16} />}
-              {statusLabel[connection?.status ?? 'not_configured']}
-            </span>
-          </div>
-
-          <div className="connectionFacts">
-            <div>
-              <ShieldCheck size={18} />
-              <span>Credenciais</span>
-              <strong>{connection?.credentialsConfigured ? 'Salvas' : 'Pendentes'}</strong>
-            </div>
-            <div>
-              <Wifi size={18} />
-              <span>Instância</span>
-              <strong>{connection ? statusLabel[connection.status] : 'Não configurada'}</strong>
-            </div>
-            <div>
-              <Smartphone size={18} />
-              <span>Telefone</span>
-              <strong>{connection?.connectedPhone ?? 'Não conectado'}</strong>
-            </div>
-          </div>
-
-          <div className="connectionMetaGrid">
-            <div>
-              <Clock3 size={17} />
-              <span>Atualizado</span>
-              <strong>{lastStatusAt}</strong>
-            </div>
-            <div>
-              <CircleAlert size={17} />
-              <span>Último erro</span>
-              <strong>{connection?.lastError ?? 'Nenhum'}</strong>
-            </div>
-          </div>
-
-          <div className="webhookBox">
-            <div>
-              <ServerCog size={18} />
-              <span>
-                <small>Webhook status</small>
-                <strong>{webhookPath ?? 'Disponível após salvar'}</strong>
-              </span>
-            </div>
-            <button
-              aria-label="Copiar endpoint do webhook"
-              className="iconButton"
-              disabled={!webhookPath}
-              onClick={handleCopyWebhook}
-              type="button"
-            >
-              <Copy size={17} />
-            </button>
-          </div>
-
-          <div className="connectionActions">
-            <button className="textButton" disabled={!connection || isRefreshing} onClick={handleRefreshStatus} type="button">
-              {isRefreshing ? <Loader2 className="spin" size={16} /> : <RefreshCw size={16} />}
-              Atualizar status
-            </button>
-            <button className="textButton" disabled={!connection || isLoadingQr} onClick={handleLoadQrCode} type="button">
-              {isLoadingQr ? <Loader2 className="spin" size={16} /> : <QrCode size={16} />}
-              Gerar QR Code
-            </button>
-          </div>
-
-          <div className="qrBox">
-            {qrImageSrc ?
-              <img alt="QR Code para conectar WhatsApp" src={qrImageSrc} />
-            : <div>
-                <QrCode size={44} />
-                <span>QR Code ainda não gerado.</span>
+          <div className="connectionList">
+            <article className="connectionRow">
+              <div className="connectionIdentity">
+                <span className="providerIcon">
+                  <MessageCircle size={18} />
+                </span>
+                <div>
+                  <strong>WhatsApp</strong>
+                  <span>{connection?.name ?? 'Nenhuma conexão cadastrada'}</span>
+                </div>
               </div>
-            }
+
+              <span className={statusClassName}>
+                {connection?.status === 'connected' ? <CheckCircle2 size={16} /> : <Unplug size={16} />}
+                {statusLabel[connection?.status ?? 'not_configured']}
+              </span>
+
+              <div className="connectionCell">
+                <Smartphone size={16} />
+                <span>{connection?.connectedPhone ?? 'Sem telefone'}</span>
+              </div>
+
+              <div className="connectionCell">
+                <Clock3 size={16} />
+                <span>{lastStatusAt}</span>
+              </div>
+
+              <div className="connectionRowActions">
+                {connection ?
+                  <>
+                    <button
+                      className="iconButton"
+                      disabled={isRefreshing}
+                      onClick={handleRefreshStatus}
+                      title="Atualizar status"
+                      type="button"
+                    >
+                      {isRefreshing ? <Loader2 className="spin" size={17} /> : <RefreshCw size={17} />}
+                    </button>
+                    <button
+                      className="iconButton"
+                      disabled={isLoadingQr}
+                      onClick={handleLoadQrCode}
+                      title="Gerar QR Code"
+                      type="button"
+                    >
+                      {isLoadingQr ? <Loader2 className="spin" size={17} /> : <QrCode size={17} />}
+                    </button>
+                    <button className="textButton" onClick={openConnectionModal} type="button">
+                      <Edit3 size={16} />
+                      Editar
+                    </button>
+                  </>
+                : <button className="textButton" onClick={openConnectionModal} type="button">
+                    <Plus size={16} />
+                    Cadastrar
+                  </button>
+                }
+              </div>
+            </article>
           </div>
+
+          {connection?.lastError ?
+            <div className="formError">
+              <strong>Último erro:</strong> {connection.lastError}
+            </div>
+          : null}
+
+          {qrImageSrc ?
+            <div className="qrBox compactQrBox">
+              <img alt="QR Code para conectar WhatsApp" src={qrImageSrc} />
+            </div>
+          : null}
         </section>
       </section>
+
+      {isModalOpen ?
+        <div className="modalOverlay" role="presentation">
+          <form className="formModal" onSubmit={handleSave}>
+            <div className="modalHeader">
+              <div>
+                <span className="eyebrow">WhatsApp</span>
+                <h2>{connection ? 'Editar conexão' : 'Cadastrar conexão'}</h2>
+              </div>
+              <button
+                aria-label="Fechar"
+                className="iconButton"
+                onClick={() => setIsModalOpen(false)}
+                type="button"
+              >
+                <X size={17} />
+              </button>
+            </div>
+
+            <label className="field">
+              <span>Nome da conexão</span>
+              <input value={name} onChange={(event) => setName(event.target.value)} required />
+            </label>
+
+            <label className="field">
+              <span>ID da instância</span>
+              <input value={instanceId} onChange={(event) => setInstanceId(event.target.value)} required />
+            </label>
+
+            <label className="field">
+              <span>Token da API</span>
+              <input
+                value={token}
+                onChange={(event) => setToken(event.target.value)}
+                placeholder={connection?.credentialsConfigured ? 'Token já salvo' : ''}
+                required={!connection?.credentialsConfigured}
+                type="password"
+              />
+            </label>
+
+            <div className="modalActions">
+              <button className="textButton" onClick={() => setIsModalOpen(false)} type="button">
+                Cancelar
+              </button>
+              <button className="primaryButton compactButton" disabled={isSaving} type="submit">
+                {isSaving ? <Loader2 className="spin" size={17} /> : <Save size={17} />}
+                Salvar
+              </button>
+            </div>
+          </form>
+        </div>
+      : null}
     </main>
   );
 }
