@@ -13,11 +13,14 @@ export default function LoginPage() {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [membershipOptions, setMembershipOptions] = useState<MembershipOption[]>([]);
+  const [nextPath, setNextPath] = useState('/');
 
   useEffect(() => {
+    setNextPath(readSafeNextPath());
+
     getCurrentUser()
       .then(() => {
-        router.replace('/');
+        router.replace(readSafeNextPath());
       })
       .catch(() => {
         setIsCheckingSession(false);
@@ -38,7 +41,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace('/');
+      router.replace(nextPath);
     } catch (caught) {
       if (caught instanceof ApiError) {
         setError(caught.message);
@@ -62,7 +65,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace('/');
+      router.replace(nextPath);
     } catch (caught) {
       if (caught instanceof ApiError) {
         setError(caught.message);
@@ -162,4 +165,18 @@ export default function LoginPage() {
       </section>
     </main>
   );
+}
+
+function readSafeNextPath(): string {
+  if (typeof window === 'undefined') {
+    return '/';
+  }
+
+  const next = new URLSearchParams(window.location.search).get('next');
+
+  if (!next || !next.startsWith('/') || next.startsWith('//')) {
+    return '/';
+  }
+
+  return next;
 }
