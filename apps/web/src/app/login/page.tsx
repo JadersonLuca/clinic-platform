@@ -2,8 +2,8 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { HeartPulse, Loader2, LogIn } from 'lucide-react';
-import { ApiError, getCurrentUser, login } from '../../lib/api';
+import { Building2, HeartPulse, Loader2, LogIn } from 'lucide-react';
+import { ApiError, getCurrentUser, login, type MembershipOption } from '../../lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [membershipOptions, setMembershipOptions] = useState<MembershipOption[]>([]);
 
   useEffect(() => {
     getCurrentUser()
@@ -27,9 +28,40 @@ export default function LoginPage() {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    setMembershipOptions([]);
 
     try {
-      await login(email, password);
+      const result = await login(email, password);
+
+      if (result.requiresMembershipSelection) {
+        setMembershipOptions(result.memberships);
+        return;
+      }
+
+      router.replace('/');
+    } catch (caught) {
+      if (caught instanceof ApiError) {
+        setError(caught.message);
+      } else {
+        setError('Não foi possível conectar à API.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleSelectMembership(membershipId: string) {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await login(email, password, membershipId);
+
+      if (result.requiresMembershipSelection) {
+        setMembershipOptions(result.memberships);
+        return;
+      }
+
       router.replace('/');
     } catch (caught) {
       if (caught instanceof ApiError) {
@@ -100,12 +132,32 @@ export default function LoginPage() {
             </p>
           : null}
 
-          <button className="primaryButton" disabled={isSubmitting || !email || !password} type="submit">
-            {isSubmitting ?
-              <Loader2 className="spin" size={18} />
-            : <LogIn size={18} />}
-            Entrar
-          </button>
+          {membershipOptions.length > 0 ?
+            <div className="companyPicker" aria-label="Escolher empresa">
+              {membershipOptions.map((membership) => (
+                <button
+                  className="companyOption"
+                  disabled={isSubmitting}
+                  key={membership.membershipId}
+                  onClick={() => void handleSelectMembership(membership.membershipId)}
+                  type="button"
+                >
+                  <Building2 size={18} />
+                  <span>
+                    <strong>{membership.organizationName ?? membership.tenantName}</strong>
+                    <small>
+                      {membership.tenantName} · {membership.role}
+                    </small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          : <button className="primaryButton" disabled={isSubmitting || !email || !password} type="submit">
+              {isSubmitting ?
+                <Loader2 className="spin" size={18} />
+              : <LogIn size={18} />}
+              Entrar
+            </button>}
         </form>
       </section>
     </main>

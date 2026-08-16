@@ -31,7 +31,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -110,9 +111,26 @@ button {
   padding: 0 12px;
 }
 
-.field input:focus {
+.field select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  outline: 0;
+  padding: 0 12px;
+}
+
+.field input:focus,
+.field select:focus {
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+.fieldHint {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .formError {
@@ -140,6 +158,59 @@ button {
 .primaryButton:disabled {
   cursor: not-allowed;
   opacity: 0.72;
+}
+
+.companyPicker {
+  display: grid;
+  gap: 10px;
+}
+
+.companyOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  color: var(--text);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.companyOption:hover,
+.companyOption:focus {
+  border-color: var(--brand);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+.companyOption svg {
+  color: var(--brand);
+  flex: 0 0 auto;
+}
+
+.companyOption span,
+.companyOption strong,
+.companyOption small {
+  display: block;
+}
+
+.companyOption span {
+  min-width: 0;
+}
+
+.companyOption strong,
+.companyOption small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.companyOption small {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .spin {
@@ -275,6 +346,49 @@ h2 {
 
 .topbarActions {
   gap: 10px;
+}
+
+.headerConnection,
+.connectionBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.headerConnection {
+  border: 1px solid var(--line);
+  padding: 0 10px;
+}
+
+.connectionBadge {
+  padding: 6px 10px;
+}
+
+.statusconnected {
+  border-color: rgba(15, 118, 110, 0.28);
+  background: var(--mint);
+  color: var(--brand-strong);
+}
+
+.statusdisconnected,
+.statusnot_configured,
+.statusqr_pending {
+  border-color: rgba(183, 121, 31, 0.25);
+  background: #fef3c7;
+  color: var(--amber);
+}
+
+.statuserror {
+  border-color: rgba(190, 18, 60, 0.25);
+  background: rgba(190, 18, 60, 0.08);
+  color: var(--rose);
 }
 
 .search {
@@ -542,6 +656,221 @@ time {
   color: var(--brand);
 }
 
+.settingsShell {
+  min-height: 100vh;
+  padding: 28px 30px 36px;
+}
+
+.settingsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 auto 18px;
+  max-width: 1180px;
+}
+
+.connectionLayout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.75fr) minmax(0, 1.25fr);
+  align-items: start;
+  gap: 16px;
+  margin: 0 auto;
+  max-width: 1180px;
+}
+
+.teamLayout {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.62fr) minmax(0, 1.38fr);
+  align-items: start;
+  gap: 16px;
+  margin: 0 auto;
+  max-width: 1180px;
+}
+
+.connectionForm {
+  display: grid;
+  gap: 16px;
+}
+
+.teamForm {
+  display: grid;
+  gap: 16px;
+}
+
+.connectionPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.teamPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.teamList {
+  display: grid;
+  gap: 12px;
+}
+
+.teamRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 150px 130px 42px auto;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.teamIdentity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.teamIdentity strong,
+.teamIdentity span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamIdentity span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.compactField {
+  display: grid;
+  gap: 5px;
+}
+
+.compactField span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.compactField select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 0 8px;
+}
+
+.compactField select:disabled,
+.iconButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 9px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.roleowner,
+.rolesuperadmin {
+  background: var(--mint);
+  color: var(--brand-strong);
+}
+
+.roleadmin {
+  background: #dbeafe;
+  color: var(--blue);
+}
+
+.rolestaff {
+  background: #fef3c7;
+  color: var(--amber);
+}
+
+.connectionFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.connectionFacts div {
+  display: grid;
+  min-height: 108px;
+  align-content: start;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 14px;
+}
+
+.connectionFacts svg {
+  color: var(--brand);
+}
+
+.connectionFacts span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.connectionFacts strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.connectionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.connectionActions .textButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.qrBox {
+  display: grid;
+  min-height: 340px;
+  place-items: center;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 20px;
+}
+
+.qrBox img {
+  width: min(100%, 300px);
+  height: auto;
+}
+
+.qrBox div {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.qrBox svg {
+  color: var(--brand);
+}
+
 @media (max-width: 1120px) {
   .shell {
     grid-template-columns: 92px minmax(0, 1fr);
@@ -586,7 +915,8 @@ time {
 
   .topbar,
   .topbarActions,
-  .clinicPanel {
+  .clinicPanel,
+  .settingsHeader {
     align-items: stretch;
     flex-direction: column;
   }
@@ -601,6 +931,20 @@ time {
 
   .moduleGrid {
     grid-template-columns: 1fr;
+  }
+
+  .connectionLayout,
+  .teamLayout,
+  .connectionFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .teamRow {
+    grid-template-columns: 1fr;
+  }
+
+  .settingsShell {
+    padding: 20px 16px 28px;
   }
 
   .setupRow {

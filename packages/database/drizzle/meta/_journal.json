@@ -15,6 +15,20 @@
       "when": 1786832065532,
       "tag": "0001_careless_blockbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786837600000,
+      "tag": "0002_messaging_connections",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786840000000,
+      "tag": "0003_superadmin_role",
+      "breakpoints": true
     }
   ]
 }

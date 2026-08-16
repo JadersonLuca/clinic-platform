@@ -15,6 +15,7 @@ import {
   Loader2,
   LogOut,
   MessageCircle,
+  PlugZap,
   Search,
   Settings,
   ShieldCheck,
@@ -23,7 +24,13 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getCurrentUser, logout, type AuthenticatedUser } from '../lib/api';
+import {
+  getCurrentUser,
+  getPrimaryWhatsappConnection,
+  logout,
+  type AuthenticatedUser,
+  type MessagingConnection,
+} from '../lib/api';
 
 const setupItems = [
   { label: 'Dados da clínica', status: 'Base', progress: 72 },
@@ -50,12 +57,20 @@ const conversations = [
 export default function Home() {
   const router = useRouter();
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [whatsappConnection, setWhatsappConnection] = useState<MessagingConnection | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   useEffect(() => {
     getCurrentUser()
       .then((result) => {
         setUser(result.user);
+        getPrimaryWhatsappConnection()
+          .then((connectionResult) => {
+            setWhatsappConnection(connectionResult.connection);
+          })
+          .catch(() => {
+            setWhatsappConnection(null);
+          });
       })
       .catch(() => {
         router.replace('/login');
@@ -108,7 +123,7 @@ export default function Home() {
             <Users size={18} />
             Pacientes
           </a>
-          <a className="navItem" href="#">
+          <a className="navItem" href="/settings/users">
             <ShieldCheck size={18} />
             Permissões
           </a>
@@ -131,9 +146,16 @@ export default function Home() {
         <header className="topbar">
           <div>
             <span className="eyebrow">Painel da clínica</span>
-            <h1>Configuração operacional</h1>
+            <h1>{user?.organizationName ?? user?.tenantName ?? 'Configuração operacional'}</h1>
           </div>
           <div className="topbarActions">
+            <a
+              className={`headerConnection status${whatsappConnection?.status ?? 'not_configured'}`}
+              href="/settings/channels"
+            >
+              <PlugZap size={15} />
+              <span>{whatsappConnection?.status === 'connected' ? 'WhatsApp conectado' : 'WhatsApp offline'}</span>
+            </a>
             <label className="search">
               <Search size={17} />
               <input aria-label="Buscar" placeholder="Buscar" />
@@ -248,8 +270,8 @@ export default function Home() {
             </div>
             <div>
               <span className="eyebrow">Perfil</span>
-              <h2>Clínica principal</h2>
-              <p>Configurações de atendimento, canais, equipe, agenda e automações ficarão organizadas por tenant.</p>
+              <h2>{user?.tenantName ?? 'Clínica principal'}</h2>
+              <p>Configurações de atendimento, canais, equipe, agenda e automações ficam isoladas por empresa.</p>
             </div>
           </div>
         </section>

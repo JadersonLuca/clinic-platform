@@ -7,6 +7,7 @@ import type { AuthenticatedUser } from './auth.types';
 interface LoginBody {
   email?: unknown;
   password?: unknown;
+  membershipId?: unknown;
 }
 
 @Controller('auth')
@@ -19,12 +20,16 @@ export class AuthController {
       throw new BadRequestException('email and password are required');
     }
 
-    return this.authService.login(body.email, body.password);
+    if (body.membershipId !== undefined && typeof body.membershipId !== 'string') {
+      throw new BadRequestException('membershipId must be a string');
+    }
+
+    return this.authService.login(body.email, body.password, body.membershipId);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getMe(@CurrentUser() user: AuthenticatedUser): { user: AuthenticatedUser } {
-    return { user };
+  async getMe(@CurrentUser() user: AuthenticatedUser): Promise<{ user: AuthenticatedUser }> {
+    return { user: await this.authService.getSessionUser(user) };
   }
 }

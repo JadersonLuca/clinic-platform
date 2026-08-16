@@ -1,6 +1,6 @@
 import { memberships, organizations, tenants, users } from '@clinic/database';
 import { createDatabase, createPostgresPool } from '@clinic/database';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { normalizeEmail } from './auth.service';
 import { PasswordService } from './password.service';
 
@@ -92,12 +92,25 @@ async function main(): Promise<void> {
       const [existingMembership] = await tx
         .select()
         .from(memberships)
-        .where(eq(memberships.userId, user.id))
+        .where(
+          and(
+            eq(memberships.tenantId, tenant.id),
+            eq(memberships.userId, user.id),
+            isNull(memberships.organizationId),
+          ),
+        )
         .limit(1);
 
       const [membership] =
         existingMembership ?
-          [existingMembership]
+          await tx
+            .update(memberships)
+            .set({
+              role: 'owner',
+              status: 'active',
+            })
+            .where(eq(memberships.id, existingMembership.id))
+            .returning()
         : await tx
             .insert(memberships)
             .values({

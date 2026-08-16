@@ -10,6 +10,7 @@
     "db:generate": "pnpm --filter @clinic/database db:generate",
     "db:migrate": "pnpm --filter @clinic/database db:migrate",
     "auth:bootstrap-owner": "pnpm --filter @clinic/api auth:bootstrap-owner",
+    "auth:seed-test-users": "pnpm --filter @clinic/api auth:seed-test-users",
     "build": "pnpm -r build"
   }
 }

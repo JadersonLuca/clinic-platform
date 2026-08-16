@@ -6,7 +6,8 @@
     "build": "nest build",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
-    "auth:bootstrap-owner": "tsx src/auth/bootstrap-owner.ts"
+    "auth:bootstrap-owner": "tsx src/auth/bootstrap-owner.ts",
+    "auth:seed-test-users": "tsx src/auth/seed-test-users.ts"
   },
   "dependencies": {
     "@clinic/database": "workspace:*",

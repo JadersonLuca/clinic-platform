@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   index,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -12,13 +13,22 @@ import {
 
 export const tenantStatusEnum = pgEnum('tenant_status', ['active', 'inactive', 'suspended']);
 export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'invited']);
-export const membershipRoleEnum = pgEnum('membership_role', ['owner', 'admin', 'staff']);
+export const membershipRoleEnum = pgEnum('membership_role', ['owner', 'superadmin', 'admin', 'staff']);
 export const membershipStatusEnum = pgEnum('membership_status', ['active', 'inactive', 'invited']);
 export const organizationTypeEnum = pgEnum('organization_type', [
   'practice',
   'solo_practitioner',
   'company',
   'other',
+]);
+export const messagingChannelEnum = pgEnum('messaging_channel', ['whatsapp']);
+export const messagingProviderEnum = pgEnum('messaging_provider', ['zapi']);
+export const messagingConnectionStatusEnum = pgEnum('messaging_connection_status', [
+  'not_configured',
+  'disconnected',
+  'qr_pending',
+  'connected',
+  'error',
 ]);
 
 export const tenants = pgTable(
@@ -104,5 +114,38 @@ export const memberships = pgTable(
     tenantOrganizationUserUnique: uniqueIndex('memberships_tenant_organization_user_unique')
       .on(table.tenantId, table.organizationId, table.userId)
       .where(sql`organization_id is not null`),
+  }),
+);
+
+export const messagingConnections = pgTable(
+  'messaging_connections',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').references(() => organizations.id, { onDelete: 'set null' }),
+    name: text('name').notNull(),
+    channel: messagingChannelEnum('channel').notNull(),
+    provider: messagingProviderEnum('provider').notNull(),
+    status: messagingConnectionStatusEnum('status').notNull().default('not_configured'),
+    externalInstanceId: text('external_instance_id'),
+    connectedPhone: text('connected_phone'),
+    credentials: jsonb('credentials').$type<Record<string, unknown>>().notNull().default({}),
+    providerSettings: jsonb('provider_settings').$type<Record<string, unknown>>().notNull().default({}),
+    lastError: text('last_error'),
+    lastStatusAt: timestamp('last_status_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    tenantIndex: index('messaging_connections_tenant_id_idx').on(table.tenantId),
+    tenantChannelIndex: index('messaging_connections_tenant_channel_idx').on(table.tenantId, table.channel),
+    providerInstanceUnique: uniqueIndex('messaging_connections_provider_instance_unique')
+      .on(table.provider, table.externalInstanceId)
+      .where(sql`external_instance_id is not null`),
+    tenantProviderInstanceUnique: uniqueIndex('messaging_connections_tenant_provider_instance_unique')
+      .on(table.tenantId, table.provider, table.externalInstanceId)
+      .where(sql`external_instance_id is not null`),
   }),
 );

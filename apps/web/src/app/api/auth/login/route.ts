@@ -3,8 +3,10 @@ import { authCookieMaxAgeSeconds, authCookieName } from '../../../../lib/auth-co
 import { getApiBaseUrl, jsonError, readApiError } from '../../../../lib/server-api';
 
 interface LoginResponse {
-  accessToken: string;
+  requiresMembershipSelection?: boolean;
+  accessToken?: string;
   user: unknown;
+  memberships?: unknown;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -43,6 +45,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const body = (await response.json()) as LoginResponse;
+
+  if (body.requiresMembershipSelection) {
+    return NextResponse.json({
+      requiresMembershipSelection: true,
+      user: body.user,
+      memberships: body.memberships,
+    });
+  }
+
+  if (!body.accessToken) {
+    return jsonError('Não foi possível iniciar a sessão.', 502);
+  }
+
   const nextResponse = NextResponse.json({ user: body.user });
 
   nextResponse.cookies.set({
