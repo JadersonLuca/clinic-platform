@@ -211,7 +211,8 @@ export class MessagingService {
     const name = input.name.trim();
     const instanceId = input.instanceId.trim();
     const token = input.token?.trim() || readString(currentCredentials, 'token') || '';
-    const clientToken = input.clientToken?.trim() || readString(currentCredentials, 'clientToken') || '';
+    const clientToken =
+      input.clientToken === undefined ? readString(currentCredentials, 'clientToken') || '' : input.clientToken.trim();
 
     if (!name || !instanceId || !token) {
       throw new BadRequestException('name, instanceId and token are required');

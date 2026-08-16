@@ -227,10 +227,10 @@ export default function ChannelsSettingsPage() {
             <input
               value={clientToken}
               onChange={(event) => setClientToken(event.target.value)}
-              placeholder={connection?.credentialsConfigured ? 'Preencha só se sua conta usa token de segurança' : ''}
+              placeholder={connection?.credentialsConfigured ? 'Deixe vazio para remover' : ''}
               type="password"
             />
-            <small className="fieldHint">Use apenas se o token de segurança da conta estiver ativado na Z-API.</small>
+            <small className="fieldHint">Deixe vazio se sua Z-API usa apenas Instance ID e Token.</small>
           </label>
 
           {error ? <div className="formError">{error}</div> : null}
