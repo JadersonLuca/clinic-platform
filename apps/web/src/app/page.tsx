@@ -107,19 +107,19 @@ export default function Home() {
         </div>
 
         <nav className="nav">
-          <a className="navItem active" href="#">
+          <a className="navItem active" href="/">
             <LayoutDashboard size={18} />
             Visão geral
           </a>
-          <a className="navItem" href="#">
+          <a className="navItem" href="/conversations">
             <MessageCircle size={18} />
             Atendimento
           </a>
-          <a className="navItem" href="#">
+          <a className="navItem" href="/appointments">
             <CalendarDays size={18} />
             Agenda
           </a>
-          <a className="navItem" href="#">
+          <a className="navItem" href="/patients">
             <Users size={18} />
             Pacientes
           </a>

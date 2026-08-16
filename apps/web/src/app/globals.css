@@ -697,6 +697,31 @@ time {
   max-width: 1180px;
 }
 
+.placeholderGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 auto;
+  max-width: 1180px;
+}
+
+.placeholderPanel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 180px;
+}
+
+.placeholderPanel svg {
+  color: var(--brand);
+}
+
+.placeholderPanel p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .connectionForm {
   display: grid;
   gap: 16px;
@@ -1051,6 +1076,7 @@ time {
 
   .connectionLayout,
   .teamLayout,
+  .placeholderGrid,
   .connectionFacts,
   .connectionMetaGrid {
     grid-template-columns: 1fr;
