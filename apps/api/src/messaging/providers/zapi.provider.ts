@@ -55,7 +55,7 @@ export class ZApiProvider implements MessagingProviderClient<ZApiCredentials> {
     });
 
     if (!response.ok) {
-      throw new BadGatewayException(`Z-API request failed with status ${response.status}`);
+      throw new BadGatewayException(`Z-API status ${response.status}: ${await readProviderError(response)}`);
     }
 
     return response.json() as Promise<T>;
@@ -67,4 +67,31 @@ export class ZApiProvider implements MessagingProviderClient<ZApiCredentials> {
 
     return `${this.baseUrl.replace(/\/$/, '')}/instances/${instanceId}/token/${token}/${path}`;
   }
+}
+
+async function readProviderError(response: Response): Promise<string> {
+  const fallback = response.statusText || 'request failed';
+
+  try {
+    const text = await response.text();
+
+    if (!text.trim()) {
+      return fallback;
+    }
+
+    try {
+      const body = JSON.parse(text) as Record<string, unknown>;
+      const message = readString(body.message) ?? readString(body.error) ?? readString(body.value);
+
+      return message ?? text.slice(0, 300);
+    } catch {
+      return text.slice(0, 300);
+    }
+  } catch {
+    return fallback;
+  }
+}
+
+function readString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
