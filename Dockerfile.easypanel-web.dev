@@ -7,12 +7,11 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps ./apps
 COPY packages ./packages
-
-RUN pnpm install --frozen-lockfile
+COPY docker ./docker
 
 ENV NODE_ENV=development
 ENV WEB_PORT=3000
 
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "@clinic/web", "dev"]
+CMD ["sh", "docker/easypanel/web-dev.sh"]

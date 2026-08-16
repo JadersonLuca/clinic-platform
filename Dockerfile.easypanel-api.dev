@@ -7,14 +7,11 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps ./apps
 COPY packages ./packages
-
-RUN pnpm install --frozen-lockfile \
-  && pnpm --filter @clinic/database build \
-  && pnpm --filter @clinic/queues build
+COPY docker ./docker
 
 ENV NODE_ENV=development
 ENV API_PORT=3000
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "pnpm --filter @clinic/database db:migrate && if [ -n \"${BOOTSTRAP_OWNER_EMAIL:-}\" ] || [ -n \"${BOOTSTRAP_OWNER_PASSWORD:-}\" ]; then if [ -z \"${BOOTSTRAP_OWNER_EMAIL:-}\" ] || [ -z \"${BOOTSTRAP_OWNER_PASSWORD:-}\" ]; then echo \"BOOTSTRAP_OWNER_EMAIL and BOOTSTRAP_OWNER_PASSWORD must be configured together.\" >&2; exit 1; fi; pnpm --filter @clinic/api auth:bootstrap-owner; fi && pnpm --filter @clinic/api start:dev"]
+CMD ["sh", "docker/easypanel/api-dev.sh"]

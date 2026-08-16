@@ -73,6 +73,8 @@ Configuração sugerida:
 - Web: porta `3000`, comando padrão do Dockerfile.
 - Worker: sem porta pública, comando padrão do Dockerfile.
 
+Se usar bind mount no EasyPanel, monte a raiz do projeto em `/app`. Estes Dockerfiles de desenvolvimento instalam as dependências e compilam os pacotes internos na inicialização, porque o bind mount substitui o conteúdo gerado durante o build da imagem.
+
 Variáveis mínimas para desenvolvimento:
 
 API:

@@ -7,10 +7,8 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps ./apps
 COPY packages ./packages
-
-RUN pnpm install --frozen-lockfile \
-  && pnpm --filter @clinic/queues build
+COPY docker ./docker
 
 ENV NODE_ENV=development
 
-CMD ["pnpm", "--filter", "@clinic/worker", "start:dev"]
+CMD ["sh", "docker/easypanel/worker-dev.sh"]
