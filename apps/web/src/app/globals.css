@@ -142,6 +142,15 @@ button {
   padding: 10px 12px;
 }
 
+.formNotice {
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--brand-strong);
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
 .primaryButton {
   display: inline-flex;
   align-items: center;
@@ -703,6 +712,37 @@ time {
   gap: 16px;
 }
 
+.providerStrip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 12px;
+}
+
+.providerIcon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--mint);
+  color: var(--brand-strong);
+}
+
+.providerStrip strong,
+.providerStrip span {
+  display: block;
+}
+
+.providerStrip span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .teamPanel {
   display: grid;
   gap: 16px;
@@ -833,6 +873,82 @@ time {
   font-size: 14px;
 }
 
+.connectionMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.connectionMetaGrid div {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.connectionMetaGrid svg {
+  grid-row: span 2;
+  color: var(--brand);
+}
+
+.connectionMetaGrid span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.connectionMetaGrid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.webhookBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 12px;
+}
+
+.webhookBox > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.webhookBox svg {
+  flex: 0 0 auto;
+  color: var(--brand);
+}
+
+.webhookBox span,
+.webhookBox small,
+.webhookBox strong {
+  display: block;
+}
+
+.webhookBox small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.webhookBox strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
 .connectionActions {
   display: flex;
   flex-wrap: wrap;
@@ -935,7 +1051,8 @@ time {
 
   .connectionLayout,
   .teamLayout,
-  .connectionFacts {
+  .connectionFacts,
+  .connectionMetaGrid {
     grid-template-columns: 1fr;
   }
 

@@ -2,15 +2,20 @@
 
 import {
   CheckCircle2,
+  Clock3,
   CircleAlert,
+  Copy,
   KeyRound,
   Loader2,
   MessageCircle,
   QrCode,
   RefreshCw,
   Save,
+  ServerCog,
+  ShieldCheck,
   Smartphone,
   Unplug,
+  Wifi,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
@@ -43,6 +48,7 @@ export default function ChannelsSettingsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingQr, setIsLoadingQr] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     getPrimaryWhatsappConnection()
@@ -63,10 +69,26 @@ export default function ChannelsSettingsPage() {
   }, [router]);
 
   const statusClassName = useMemo(() => `connectionBadge status${connection?.status ?? 'not_configured'}`, [connection]);
+  const qrImageSrc = useMemo(() => {
+    if (!qrCode) {
+      return null;
+    }
+
+    return qrCode.startsWith('data:image') ? qrCode : `data:image/png;base64,${qrCode}`;
+  }, [qrCode]);
+  const webhookPath = connection ? `/webhooks/zapi/connections/${connection.id}/connection` : null;
+  const lastStatusAt =
+    connection?.lastStatusAt ?
+      new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }).format(new Date(connection.lastStatusAt))
+    : 'Sem atualização';
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setNotice(null);
     setIsSaving(true);
     setQrCode(null);
 
@@ -75,6 +97,7 @@ export default function ChannelsSettingsPage() {
       setConnection(result.connection);
       setToken('');
       setClientToken('');
+      setNotice('Credenciais salvas.');
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Não foi possível salvar as credenciais.');
     } finally {
@@ -88,11 +111,13 @@ export default function ChannelsSettingsPage() {
     }
 
     setError(null);
+    setNotice(null);
     setIsRefreshing(true);
 
     try {
       const result = await refreshMessagingConnectionStatus(connection.id);
       setConnection(result.connection);
+      setNotice('Status atualizado.');
     } catch (refreshError) {
       setError(refreshError instanceof Error ? refreshError.message : 'Não foi possível atualizar o status.');
     } finally {
@@ -106,16 +131,33 @@ export default function ChannelsSettingsPage() {
     }
 
     setError(null);
+    setNotice(null);
     setIsLoadingQr(true);
 
     try {
       const result = await getMessagingConnectionQrCode(connection.id);
       setQrCode(result.qrCode);
       setConnection({ ...connection, status: 'qr_pending' });
+      setNotice('QR Code gerado.');
     } catch (qrError) {
       setError(qrError instanceof Error ? qrError.message : 'Não foi possível carregar o QR Code.');
     } finally {
       setIsLoadingQr(false);
+    }
+  }
+
+  async function handleCopyWebhook() {
+    if (!webhookPath) {
+      return;
+    }
+
+    setNotice(null);
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(webhookPath);
+      setNotice('Endpoint copiado.');
+    } catch {
+      setError('Não foi possível copiar o endpoint.');
     }
   }
 
@@ -147,6 +189,16 @@ export default function ChannelsSettingsPage() {
               <h2>Z-API</h2>
             </div>
             <KeyRound size={20} />
+          </div>
+
+          <div className="providerStrip">
+            <span className="providerIcon">
+              <MessageCircle size={18} />
+            </span>
+            <div>
+              <strong>WhatsApp via Z-API</strong>
+              <span>{connection?.credentialsConfigured ? 'Credenciais configuradas' : 'Credenciais pendentes'}</span>
+            </div>
           </div>
 
           <label className="field">
@@ -182,6 +234,7 @@ export default function ChannelsSettingsPage() {
           </label>
 
           {error ? <div className="formError">{error}</div> : null}
+          {notice ? <div className="formNotice">{notice}</div> : null}
 
           <button className="primaryButton" disabled={isSaving} type="submit">
             {isSaving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
@@ -203,20 +256,52 @@ export default function ChannelsSettingsPage() {
 
           <div className="connectionFacts">
             <div>
-              <MessageCircle size={18} />
-              <span>Canal</span>
-              <strong>WhatsApp</strong>
+              <ShieldCheck size={18} />
+              <span>Credenciais</span>
+              <strong>{connection?.credentialsConfigured ? 'Salvas' : 'Pendentes'}</strong>
+            </div>
+            <div>
+              <Wifi size={18} />
+              <span>Instância</span>
+              <strong>{connection ? statusLabel[connection.status] : 'Não configurada'}</strong>
             </div>
             <div>
               <Smartphone size={18} />
               <span>Telefone</span>
               <strong>{connection?.connectedPhone ?? 'Não conectado'}</strong>
             </div>
+          </div>
+
+          <div className="connectionMetaGrid">
             <div>
-              <CircleAlert size={18} />
-              <span>Último retorno</span>
-              <strong>{connection?.lastError ?? 'Sem erro registrado'}</strong>
+              <Clock3 size={17} />
+              <span>Atualizado</span>
+              <strong>{lastStatusAt}</strong>
             </div>
+            <div>
+              <CircleAlert size={17} />
+              <span>Último erro</span>
+              <strong>{connection?.lastError ?? 'Nenhum'}</strong>
+            </div>
+          </div>
+
+          <div className="webhookBox">
+            <div>
+              <ServerCog size={18} />
+              <span>
+                <small>Webhook status</small>
+                <strong>{webhookPath ?? 'Disponível após salvar'}</strong>
+              </span>
+            </div>
+            <button
+              aria-label="Copiar endpoint do webhook"
+              className="iconButton"
+              disabled={!webhookPath}
+              onClick={handleCopyWebhook}
+              type="button"
+            >
+              <Copy size={17} />
+            </button>
           </div>
 
           <div className="connectionActions">
@@ -231,8 +316,8 @@ export default function ChannelsSettingsPage() {
           </div>
 
           <div className="qrBox">
-            {qrCode ?
-              <img alt="QR Code para conectar WhatsApp" src={qrCode} />
+            {qrImageSrc ?
+              <img alt="QR Code para conectar WhatsApp" src={qrImageSrc} />
             : <div>
                 <QrCode size={44} />
                 <span>QR Code ainda não gerado.</span>

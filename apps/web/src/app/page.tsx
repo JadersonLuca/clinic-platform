@@ -127,7 +127,7 @@ export default function Home() {
             <ShieldCheck size={18} />
             Permissões
           </a>
-          <a className="navItem" href="#">
+          <a className="navItem" href="/settings/channels">
             <Settings size={18} />
             Configurações
           </a>
