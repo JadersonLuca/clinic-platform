@@ -46,6 +46,10 @@ button {
   grid-template-columns: 280px minmax(0, 1fr);
 }
 
+.shell.sidebarCollapsed {
+  grid-template-columns: 92px minmax(0, 1fr);
+}
+
 .authShell,
 .loadingShell {
   display: grid;
@@ -246,6 +250,11 @@ button {
   padding: 24px;
 }
 
+.sidebarCollapsed .sidebar {
+  align-items: center;
+  padding: 20px 14px;
+}
+
 .brand,
 .sidebarStatus,
 .navItem,
@@ -262,6 +271,19 @@ button {
 
 .brand {
   gap: 12px;
+}
+
+.sidebarToggle {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 .brandMark {
@@ -303,6 +325,26 @@ button {
   color: #dce6e2;
   padding: 0 12px;
   text-decoration: none;
+}
+
+.sidebarCollapsed .brand div:last-child,
+.sidebarCollapsed .navItem span,
+.sidebarCollapsed .sidebarStatus div {
+  display: none;
+}
+
+.sidebarCollapsed .brand {
+  flex-direction: column;
+}
+
+.sidebarCollapsed .sidebarToggle {
+  margin-left: 0;
+}
+
+.sidebarCollapsed .navItem {
+  justify-content: center;
+  width: 48px;
+  padding: 0;
 }
 
 .navItem.active,
@@ -670,6 +712,7 @@ time {
 
 .settingsShell {
   min-height: 0;
+  overflow: hidden;
   padding: 0;
 }
 
@@ -684,7 +727,7 @@ time {
 
 .connectionLayout {
   display: grid;
-  grid-template-columns: minmax(320px, 0.75fr) minmax(0, 1.25fr);
+  grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.25fr);
   align-items: start;
   gap: 16px;
   margin: 0 auto;
@@ -693,7 +736,7 @@ time {
 
 .teamLayout {
   display: grid;
-  grid-template-columns: minmax(300px, 0.62fr) minmax(0, 1.38fr);
+  grid-template-columns: minmax(260px, 0.62fr) minmax(0, 1.38fr);
   align-items: start;
   gap: 16px;
   margin: 0 auto;
@@ -774,18 +817,21 @@ time {
 .teamPanel {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .teamList {
   display: grid;
   gap: 12px;
+  overflow-x: auto;
 }
 
 .teamRow {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 150px 130px 42px auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 150px) minmax(110px, 130px) 42px auto;
   align-items: center;
   gap: 12px;
+  min-width: 690px;
   border-top: 1px solid var(--line);
   padding-top: 12px;
 }
@@ -849,6 +895,69 @@ time {
   font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.modalOverlay {
+  display: grid;
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  place-items: center;
+  background: rgba(20, 32, 28, 0.42);
+  padding: 18px;
+}
+
+.confirmModal {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 420px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.confirmModal p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modalIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(190, 18, 60, 0.08);
+  color: var(--rose);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border: 1px solid rgba(190, 18, 60, 0.22);
+  border-radius: 8px;
+  background: var(--rose);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  padding: 0 14px;
+}
+
+.dangerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .roleowner,
@@ -1026,18 +1135,32 @@ time {
   }
 
   .brand div:last-child,
-  .navItem,
+  .navItem span,
   .sidebarStatus div {
     display: none;
   }
 
-  .navItem.active,
-  .navItem:hover {
-    display: flex;
+  .brand {
+    flex-direction: column;
+  }
+
+  .sidebarToggle {
+    margin-left: 0;
+  }
+
+  .navItem {
+    justify-content: center;
+    width: 48px;
+    padding: 0;
   }
 
   .contentGrid,
   .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .connectionLayout,
+  .teamLayout {
     grid-template-columns: 1fr;
   }
 }

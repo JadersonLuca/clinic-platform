@@ -9,6 +9,8 @@ import {
   Loader2,
   LogOut,
   MessageCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
   PlugZap,
   Search,
   Settings,
@@ -25,6 +27,7 @@ import {
   type AuthenticatedUser,
   type MessagingConnection,
 } from '../lib/api';
+import { ConfirmationModal } from './ConfirmationModal';
 
 const navItems = [
   { href: '/', label: 'Visão geral', icon: LayoutDashboard },
@@ -38,9 +41,16 @@ const navItems = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [whatsappConnection, setWhatsappConnection] = useState<MessagingConnection | null>(null);
   const isLoginPage = pathname === '/login';
+
+  useEffect(() => {
+    setIsSidebarOpen(localStorage.getItem('clinic-sidebar-open') !== 'false');
+  }, []);
 
   useEffect(() => {
     if (isLoginPage) {
@@ -60,9 +70,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       });
   }, [isLoginPage, router]);
 
+  function toggleSidebar() {
+    setIsSidebarOpen((current) => {
+      const nextValue = !current;
+      localStorage.setItem('clinic-sidebar-open', String(nextValue));
+      return nextValue;
+    });
+  }
+
   async function handleLogout() {
-    await logout().catch(() => undefined);
-    router.replace('/login');
+    setIsLoggingOut(true);
+
+    try {
+      await logout().catch(() => undefined);
+      router.replace('/login');
+    } finally {
+      setIsLoggingOut(false);
+      setIsLogoutModalOpen(false);
+    }
   }
 
   if (isLoginPage) {
@@ -70,7 +95,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="shell">
+    <div className={`shell${isSidebarOpen ? '' : ' sidebarCollapsed'}`}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brandMark">
@@ -80,6 +105,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <strong>Clinic Platform</strong>
             <span>Administração</span>
           </div>
+          <button
+            aria-label={isSidebarOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
+            className="sidebarToggle"
+            onClick={toggleSidebar}
+            title={isSidebarOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
+            type="button"
+          >
+            {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+          </button>
         </div>
 
         <nav className="nav">
@@ -88,9 +122,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
 
             return (
-              <Link className={`navItem${isActive ? ' active' : ''}`} href={item.href} key={item.href}>
+              <Link
+                className={`navItem${isActive ? ' active' : ''}`}
+                href={item.href}
+                key={item.href}
+                title={item.label}
+              >
                 <Icon size={18} />
-                {item.label}
+                <span>{item.label}</span>
               </Link>
             );
           })}
@@ -126,7 +165,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <button className="iconButton" aria-label="Notificações" type="button">
               <Bell size={18} />
             </button>
-            <button className="iconButton" aria-label="Sair" onClick={handleLogout} type="button">
+            <button className="iconButton" aria-label="Sair" onClick={() => setIsLogoutModalOpen(true)} type="button">
               <LogOut size={18} />
             </button>
           </div>
@@ -134,6 +173,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {children}
       </section>
+
+      <ConfirmationModal
+        confirmLabel="Sair"
+        description="Você será desconectado desta sessão e voltará para a tela de login."
+        isConfirming={isLoggingOut}
+        isOpen={isLogoutModalOpen}
+        onCancel={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+        title="Sair do sistema?"
+      />
     </div>
   );
 }
