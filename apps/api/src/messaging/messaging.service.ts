@@ -493,9 +493,9 @@ export class MessagingService {
     const messageType = inferMessageType(media);
     const conversation = await this.upsertConversation(connection, {
       remoteJid,
-      displayName: readString(data, 'pushName'),
+      displayName: fromMe ? null : readString(data, 'pushName'),
       isGroup: remoteJid.endsWith('@g.us'),
-      preview: body || `[${messageType}]`,
+      preview: body || messageTypeLabel(messageType),
       timestamp,
       inbound: !fromMe,
     });
@@ -584,7 +584,7 @@ export class MessagingService {
         provider: connection.provider,
         waJid: input.remoteJid,
         phone: input.isGroup ? null : onlyDigits(input.remoteJid),
-        displayName: input.displayName,
+        displayName: input.displayName ?? conversationFallbackName(input.remoteJid),
         isGroup: input.isGroup,
         lastMessagePreview: input.preview,
         lastMessageAt: input.timestamp,
@@ -1037,6 +1037,27 @@ function inferMessageType(media: Record<string, unknown>): MessagingMessageType 
   const type = readString(media, 'type');
 
   return type === 'image' || type === 'audio' || type === 'video' || type === 'document' ? type : 'text';
+}
+
+function messageTypeLabel(type: MessagingMessageType): string {
+  switch (type) {
+    case 'image':
+      return 'Imagem';
+    case 'audio':
+      return 'Áudio';
+    case 'video':
+      return 'Vídeo';
+    case 'document':
+      return 'Documento';
+    default:
+      return '';
+  }
+}
+
+function conversationFallbackName(remoteJid: string): string {
+  const phone = onlyDigits(remoteJid);
+
+  return phone || remoteJid;
 }
 
 function normalizeJid(payload: Record<string, unknown>): string | null {

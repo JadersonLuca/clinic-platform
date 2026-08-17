@@ -5,7 +5,8 @@ import {
   ChevronDown,
   Loader2,
   MessageCircle,
-  RefreshCw,
+  Pause,
+  Play,
   Reply,
   Search,
   Send,
@@ -15,7 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getCurrentUser,
   deleteMessagingConversation,
@@ -24,7 +25,6 @@ import {
   listMessagingConversations,
   listMessagingMessages,
   sendMessagingText,
-  type AuthenticatedUser,
   type MessagingConversation,
   type MessagingMessage,
 } from '../../lib/api';
@@ -39,7 +39,6 @@ const modeLabel = {
 export default function ConversationsPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [conversations, setConversations] = useState<MessagingConversation[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessagingMessage[]>([]);
@@ -54,8 +53,7 @@ export default function ConversationsPage() {
 
   useEffect(() => {
     getCurrentUser()
-      .then((result) => {
-        setUser(result.user);
+      .then(() => {
         return loadConversations();
       })
       .catch(() => {
@@ -85,6 +83,18 @@ export default function ConversationsPage() {
         setIsLoadingMessages(false);
       });
   }, [selectedId, showToast]);
+
+  useEffect(() => {
+    function refreshFromTopbar() {
+      void handleRefresh();
+    }
+
+    window.addEventListener('clinic:refresh-conversations', refreshFromTopbar);
+
+    return () => {
+      window.removeEventListener('clinic:refresh-conversations', refreshFromTopbar);
+    };
+  }, [showToast]);
 
   const selectedConversation = conversations.find((conversation) => conversation.id === selectedId) ?? null;
   const filteredConversations = useMemo(() => {
@@ -205,17 +215,6 @@ export default function ConversationsPage() {
 
   return (
     <main className="attendanceShell">
-      <header className="settingsHeader attendanceHeader">
-        <div>
-          <span className="eyebrow">Atendimento</span>
-          <h1>{user?.organizationName ?? user?.tenantName ?? 'Conversas'}</h1>
-        </div>
-        <button className="textButton" onClick={handleRefresh} type="button">
-          <RefreshCw size={16} />
-          Atualizar
-        </button>
-      </header>
-
       <section className="attendanceLayout">
         <aside className="attendanceSidebar panel">
           <div className="attendanceSearch">
@@ -247,8 +246,9 @@ export default function ConversationsPage() {
                   <span className={`mode mode${conversation.mode.toUpperCase()}`}>{modeLabel[conversation.mode]}</span>
                 </button>
                 <button
+                  aria-expanded={openConversationMenuId === conversation.id}
                   aria-label="Ações da conversa"
-                  className="conversationMenuButton"
+                  className="conversationMenuTrigger"
                   onClick={() =>
                     setOpenConversationMenuId((current) => (current === conversation.id ? null : conversation.id))
                   }
@@ -257,7 +257,7 @@ export default function ConversationsPage() {
                   <ChevronDown size={16} />
                 </button>
                 {openConversationMenuId === conversation.id ? (
-                  <div className="conversationMenu">
+                  <div className="conversationDropdown">
                     <button onClick={() => handleDeleteConversation(conversation)} type="button">
                       <Trash2 size={15} />
                       Excluir conversa
@@ -333,10 +333,12 @@ export default function ConversationsPage() {
                         <div className="quotedMessage">Respondendo {message.replyToExternalMessageId}</div>
                       ) : null}
                       <MessageMedia message={message} />
-                      <p>{message.body || mediaLabel(message.messageType)}</p>
-                      <div className="messageMetaRow">
-                        <span>{formatMessageMeta(message)}</span>
-                      </div>
+                      {message.body ? <p>{message.body}</p> : null}
+                      {message.messageType !== 'audio' ? (
+                        <div className="messageMetaRow">
+                          <span>{formatMessageMeta(message)}</span>
+                        </div>
+                      ) : null}
                     </article>
                   ))
                 )}
@@ -347,7 +349,7 @@ export default function ConversationsPage() {
                   {replyToMessage ? (
                     <div className="replyPreview">
                       <Reply size={14} />
-                      <span>{replyToMessage.body || mediaLabel(replyToMessage.messageType)}</span>
+                      <span>{replyPreviewText(replyToMessage)}</span>
                       <button aria-label="Cancelar resposta" onClick={() => setReplyToMessage(null)} type="button">
                         <X size={14} />
                       </button>
@@ -397,8 +399,23 @@ function formatMessageMeta(message: MessagingMessage): string {
   return `${time} · ${message.status}`;
 }
 
-function mediaLabel(type: MessagingMessage['messageType']): string {
-  return type === 'text' ? '' : `[${type}]`;
+function replyPreviewText(message: MessagingMessage): string {
+  if (message.body) {
+    return message.body;
+  }
+
+  switch (message.messageType) {
+    case 'image':
+      return 'Imagem';
+    case 'audio':
+      return 'Áudio';
+    case 'video':
+      return 'Vídeo';
+    case 'document':
+      return 'Documento';
+    default:
+      return 'Mensagem';
+  }
 }
 
 function MessageMedia({ message }: { message: MessagingMessage }) {
@@ -414,7 +431,7 @@ function MessageMedia({ message }: { message: MessagingMessage }) {
   }
 
   if (message.messageType === 'audio') {
-    return <audio className="messageMediaAudio" controls src={src} />;
+    return <AudioMessagePlayer message={message} src={src} />;
   }
 
   if (message.messageType === 'video') {
@@ -432,4 +449,96 @@ function readMediaUrl(media: Record<string, unknown>): string | null {
   const url = media.url;
 
   return typeof url === 'string' && url.trim() ? url : null;
+}
+
+const audioRates = [1, 1.5, 2] as const;
+
+function AudioMessagePlayer({ message, src }: { message: MessagingMessage; src: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [rateIndex, setRateIndex] = useState(0);
+
+  function togglePlayback() {
+    const audio = audioRef.current;
+
+    if (!audio) {
+      return;
+    }
+
+    if (audio.paused) {
+      void audio.play();
+    } else {
+      audio.pause();
+    }
+  }
+
+  function seek(event: MouseEvent<HTMLButtonElement>) {
+    const audio = audioRef.current;
+
+    if (!audio || !duration) {
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const nextTime = ((event.clientX - rect.left) / rect.width) * duration;
+    audio.currentTime = Math.max(0, Math.min(duration, nextTime));
+  }
+
+  const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const playbackRate = audioRates[rateIndex];
+
+  function cyclePlaybackRate() {
+    const nextIndex = (rateIndex + 1) % audioRates.length;
+    const nextRate = audioRates[nextIndex];
+
+    setRateIndex(nextIndex);
+
+    if (audioRef.current) {
+      audioRef.current.playbackRate = nextRate;
+    }
+  }
+
+  return (
+    <div className="audioPlayer">
+      <audio
+        ref={audioRef}
+        src={src}
+        onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
+        onEnded={() => setIsPlaying(false)}
+        onLoadedMetadata={(event) => {
+          event.currentTarget.playbackRate = playbackRate;
+        }}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+      />
+      <button aria-label={isPlaying ? 'Pausar áudio' : 'Reproduzir áudio'} className="audioPlayButton" onClick={togglePlayback} type="button">
+        {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+      </button>
+      <button aria-label="Progresso do áudio" className="audioProgress" onClick={seek} type="button">
+        <span style={{ width: `${progress}%` }} />
+      </button>
+      <button className="audioRateButton" onClick={cyclePlaybackRate} type="button">
+        {formatPlaybackRate(playbackRate)}
+      </button>
+      <div className="audioMeta">
+        <time>{formatAudioTime(currentTime || duration)}</time>
+        <span>{message.status}</span>
+      </div>
+    </div>
+  );
+}
+
+function formatPlaybackRate(rate: number): string {
+  return `${String(rate).replace('.', ',')}x`;
+}
+
+function formatAudioTime(value: number): string {
+  const safeValue = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+  const minutes = Math.floor(safeValue / 60);
+  const seconds = safeValue % 60;
+
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }

@@ -10,7 +10,6 @@ import {
   FileText,
   Loader2,
   MessageCircle,
-  Stethoscope,
   Users,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -159,17 +158,6 @@ export default function Home() {
                   <time>{conversation.time}</time>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="panel clinicPanel">
-            <div className="clinicVisual">
-              <Stethoscope size={36} />
-            </div>
-            <div>
-              <span className="eyebrow">Perfil</span>
-              <h2>{user?.tenantName ?? 'Clínica principal'}</h2>
-              <p>Configurações de atendimento, canais, equipe, agenda e automações ficam isoladas por empresa.</p>
             </div>
           </div>
         </section>

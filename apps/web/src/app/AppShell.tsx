@@ -12,6 +12,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PlugZap,
+  RefreshCw,
   Search,
   Settings,
   ShieldCheck,
@@ -47,8 +48,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [whatsappConnection, setWhatsappConnection] = useState<MessagingConnection | null>(null);
   const isLoginPage = pathname === '/login';
+  const isConversationsPage = pathname.startsWith('/conversations');
 
   useEffect(() => {
+    if (isMobileViewport()) {
+      setIsSidebarOpen(false);
+      return;
+    }
+
     setIsSidebarOpen(localStorage.getItem('clinic-sidebar-open') !== 'false');
   }, []);
 
@@ -78,6 +85,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     });
   }
 
+  function closeSidebarOnMobile() {
+    if (isMobileViewport()) {
+      setIsSidebarOpen(false);
+    }
+  }
+
   async function handleLogout() {
     setIsLoggingOut(true);
 
@@ -101,10 +114,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="brandMark">
             <HeartPulse size={22} />
           </div>
-          <div>
-            <strong>Clinic Platform</strong>
-            <span>Administração</span>
-          </div>
           <button
             aria-label={isSidebarOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
             className="sidebarToggle"
@@ -126,6 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className={`navItem${isActive ? ' active' : ''}`}
                 href={item.href}
                 key={item.href}
+                onClick={closeSidebarOnMobile}
                 title={item.label}
               >
                 <Icon size={18} />
@@ -156,11 +166,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <section className="workspace">
         <header className="topbar">
-          <div>
-            <span className="eyebrow">Painel da clínica</span>
-            <h1>{user?.organizationName ?? user?.tenantName ?? 'Configuração operacional'}</h1>
-          </div>
+          {isConversationsPage ? (
+            <div className="topbarPageTitle">
+              <span>Atendimento</span>
+              <strong>{user?.organizationName ?? user?.tenantName ?? 'Conversas'}</strong>
+            </div>
+          ) : null}
           <div className="topbarActions">
+            {isConversationsPage ? (
+              <button
+                className="textButton compactButton"
+                onClick={() => window.dispatchEvent(new CustomEvent('clinic:refresh-conversations'))}
+                type="button"
+              >
+                <RefreshCw size={15} />
+                Atualizar
+              </button>
+            ) : null}
             <Link
               className={`headerConnection status${whatsappConnection?.status ?? 'not_configured'}`}
               href="/settings/channels"
@@ -192,4 +214,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       />
     </div>
   );
+}
+
+function isMobileViewport(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches;
 }

@@ -47,7 +47,7 @@ button {
 }
 
 .shell.sidebarCollapsed {
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
 }
 
 .authShell,
@@ -328,7 +328,7 @@ button {
 
 .sidebarCollapsed .sidebar {
   align-items: center;
-  padding: 20px 14px;
+  padding: 16px 8px;
 }
 
 .brand,
@@ -347,6 +347,7 @@ button {
 }
 
 .brand {
+  width: 100%;
   gap: 12px;
 }
 
@@ -365,8 +366,8 @@ button {
 
 .brandMark {
   display: grid;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   place-items: center;
   border-radius: 8px;
   background: var(--brand);
@@ -413,6 +414,7 @@ button {
 
 .sidebarCollapsed .brand {
   flex-direction: column;
+  gap: 10px;
 }
 
 .sidebarCollapsed .sidebarToggle {
@@ -421,13 +423,13 @@ button {
 
 .sidebarCollapsed .navItem {
   justify-content: center;
-  width: 48px;
+  width: 42px;
   padding: 0;
 }
 
 .sidebarCollapsed .sidebarLogout {
   justify-content: center;
-  width: 48px;
+  width: 42px;
   padding: 0;
 }
 
@@ -473,7 +475,11 @@ button {
 .topbar {
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 22px;
+  margin-bottom: 14px;
+}
+
+.workspace > .topbar {
+  justify-content: space-between;
 }
 
 .eyebrow {
@@ -503,7 +509,31 @@ h2 {
 }
 
 .topbarActions {
+  margin-left: auto;
   gap: 10px;
+}
+
+.topbarPageTitle {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.topbarPageTitle span {
+  color: var(--brand-strong);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.topbarPageTitle strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .headerConnection,
@@ -883,7 +913,7 @@ time {
 }
 
 .attendanceShell {
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 96px);
 }
 
 .attendanceHeader {
@@ -892,11 +922,11 @@ time {
 
 .attendanceLayout {
   display: grid;
-  grid-template-columns: minmax(280px, 370px) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+  gap: 12px;
   margin: 0 auto;
-  max-width: 1280px;
-  min-height: calc(100vh - 150px);
+  max-width: 1440px;
+  min-height: calc(100vh - 108px);
 }
 
 .attendanceSidebar,
@@ -943,9 +973,8 @@ time {
 .attendanceConversationWrap {
   display: grid;
   position: relative;
-  grid-template-columns: minmax(0, 1fr) 34px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 4px;
 }
 
 .attendanceConversation {
@@ -959,7 +988,7 @@ time {
   border-radius: 8px;
   background: transparent;
   color: var(--text);
-  padding: 8px;
+  padding: 8px 34px 8px 8px;
   text-align: left;
 }
 
@@ -974,49 +1003,63 @@ time {
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.10);
 }
 
-.conversationMenuButton {
+.conversationMenuTrigger {
   display: grid;
+  position: absolute;
+  top: 19px;
+  right: 8px;
   width: 34px;
   height: 34px;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 8px;
-  background: var(--surface);
+  background: transparent;
   color: var(--muted);
+  opacity: 0;
 }
 
-.conversationMenuButton:hover {
+.attendanceConversationWrap:hover .conversationMenuTrigger,
+.conversationMenuTrigger:focus,
+.conversationMenuTrigger[aria-expanded='true'] {
+  opacity: 1;
+}
+
+.conversationMenuTrigger:hover {
+  background: rgba(20, 32, 28, 0.08);
   color: var(--text);
 }
 
-.conversationMenu {
+.conversationDropdown {
   display: grid;
   position: absolute;
   z-index: 8;
-  top: 42px;
-  right: 0;
-  min-width: 180px;
+  top: 50px;
+  right: 8px;
+  min-width: 160px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
   box-shadow: var(--shadow);
-  padding: 6px;
+  padding: 5px;
 }
 
-.conversationMenu button {
+.conversationDropdown button {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   min-height: 34px;
   border: 0;
   border-radius: 8px;
   background: transparent;
   color: var(--rose);
-  padding: 0 8px;
+  padding: 0 9px;
+  font-size: 13px;
   font-weight: 800;
+  text-align: left;
 }
 
-.conversationMenu button:hover {
+.conversationDropdown button:hover {
   background: rgba(190, 18, 60, 0.08);
 }
 
@@ -1240,10 +1283,95 @@ time {
   object-fit: contain;
 }
 
-.messageMediaAudio {
+.audioPlayer {
+  display: grid;
+  grid-template-columns: 34px minmax(130px, 1fr) 42px;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 4px 10px;
+  width: min(100%, 330px);
+  min-height: 50px;
+  margin: -2px -24px -2px 0;
+}
+
+.audioPlayButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.messageBubble.out .audioPlayButton {
+  background: var(--brand-strong);
+}
+
+.audioProgress {
   display: block;
-  width: min(100%, 340px);
-  margin-bottom: 8px;
+  position: relative;
+  width: 100%;
+  height: 18px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.audioProgress::before,
+.audioProgress span {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 5px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+}
+
+.audioProgress::before {
+  right: 0;
+  background: rgba(101, 115, 109, 0.24);
+  content: "";
+}
+
+.audioProgress span {
+  background: var(--brand);
+}
+
+.audioRateButton {
+  display: grid;
+  min-width: 40px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--brand-strong);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.audioRateButton:hover {
+  background: #ffffff;
+}
+
+.audioMeta {
+  display: flex;
+  grid-column: 2 / 4;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.audioMeta time,
+.audioMeta span {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .messageMediaDocument {
@@ -1843,12 +1971,12 @@ time {
 
 @media (max-width: 1120px) {
   .shell {
-    grid-template-columns: 92px minmax(0, 1fr);
+    grid-template-columns: 64px minmax(0, 1fr);
   }
 
   .sidebar {
     align-items: center;
-    padding: 20px 14px;
+    padding: 16px 8px;
   }
 
   .brand div:last-child,
@@ -1868,13 +1996,13 @@ time {
 
   .navItem {
     justify-content: center;
-    width: 48px;
+    width: 42px;
     padding: 0;
   }
 
   .sidebarLogout {
     justify-content: center;
-    width: 48px;
+    width: 42px;
     padding: 0;
   }
 
@@ -1893,18 +2021,95 @@ time {
 @media (max-width: 760px) {
   .shell {
     display: block;
+    min-height: 100vh;
   }
 
   .sidebar {
-    position: static;
-    height: auto;
-    min-height: auto;
+    position: fixed;
+    z-index: 70;
+    top: 0;
+    left: 0;
+    width: min(82vw, 280px);
+    height: 100vh;
+    min-height: 100vh;
+    gap: 18px;
+    padding: 10px 14px 16px;
+    box-shadow: 18px 0 45px rgba(20, 32, 28, 0.24);
+    transition:
+      width 0.18s ease,
+      height 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .sidebarCollapsed .sidebar {
+    position: sticky;
+    width: 100%;
+    height: 56px;
+    min-height: 56px;
     flex-direction: row;
-    justify-content: space-between;
+    gap: 10px;
+    overflow: hidden;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: none;
+    padding: 7px 12px;
+  }
+
+  .brand {
+    justify-content: flex-start;
+  }
+
+  .sidebarCollapsed .brand {
+    width: auto;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .sidebarToggle {
+    order: -1;
+    margin-left: 0;
+  }
+
+  .brandMark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .sidebarCollapsed .nav,
+  .sidebarCollapsed .sidebarStatus,
+  .sidebarCollapsed .sidebarLogout {
+    display: none;
+  }
+
+  .shell:not(.sidebarCollapsed) .sidebar .nav {
+    width: 100%;
+  }
+
+  .shell:not(.sidebarCollapsed) .navItem,
+  .shell:not(.sidebarCollapsed) .sidebarLogout {
+    width: 100%;
+  }
+
+  .shell:not(.sidebarCollapsed) .sidebarStatus {
+    width: 100%;
+  }
+
+  .shell:not(.sidebarCollapsed) .navItem span,
+  .shell:not(.sidebarCollapsed) .sidebarLogout span,
+  .shell:not(.sidebarCollapsed) .sidebarStatus div {
+    display: block;
   }
 
   .workspace {
-    padding: 20px 16px 28px;
+    padding: 14px 16px 28px;
+  }
+
+  .shell.sidebarCollapsed .workspace {
+    padding-top: 16px;
+  }
+
+  .shell:not(.sidebarCollapsed) .workspace {
+    pointer-events: none;
   }
 
   .topbar,
